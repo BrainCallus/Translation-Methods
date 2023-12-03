@@ -7,13 +7,13 @@ import enumeratum._
 sealed abstract class Token(private val pattern: String) extends EnumEntry {
   override def toString: String = {
     val name = this.getClass.getSimpleName
-    name.substring(0, name.length-1)
+    name.substring(0, name.length - 1)
   }
   def getPattern: Pattern = Pattern.compile(pattern)
   def getPatternAsString: String = pattern
 }
 
-object Token extends Enum [Token ]{
+object Token extends Enum[Token] {
   case object LPAREN extends Token("\\(")
 
   case object RPAREN extends Token("\\)")
@@ -29,7 +29,7 @@ object Token extends Enum [Token ]{
   case object GT extends Token(">")
   case object NUMBER extends Token("(-)?(\\d+)")
   case object TYPE_NAME extends Token(Constants.validTypeNames.mkString("(", "|", ")"))
-  case object NAME extends Token("([a-zA-Z_]+[\\w[^\\-]]*)")
+  case object NAME extends Token("([a-zA-Z_]+[a-zA-Z_0-9]*)")
   case object EPS extends Token("")
 
   val values: IndexedSeq[Token] = findValues

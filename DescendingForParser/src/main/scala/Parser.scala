@@ -14,9 +14,9 @@ case class Parser() {
     val analyzer = LexicalAnalyzer(prepareExpression(Token.values)(input))
 
     try {
-      (grammar.getDerivation("S") parseState(analyzer.moveNext(), grammar))._2
+      (grammar.getDerivation("S") parseState (analyzer.moveNext(), grammar))._2
     } catch {
-      case parseException: ParseException => throw new ParseException(parseException.getMessage +"\n"+ input.trim)
+      case parseException: ParseException => throw new ParseException(parseException.getMessage + "\n" + input.trim)
     }
   }
 

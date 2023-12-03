@@ -1,6 +1,4 @@
-import TestUtil.{TestSample, randomName, validChars}
 import functional.Tree
-import util.Constants
 import util.Constants.{epsilon, validTypeNames}
 import util.Util._
 
@@ -9,12 +7,17 @@ import scala.util.Random
 object TestUtil {
 
   case class TestSample(expectedLeafValues: List[String]) {
+
+    def getVarName: String = expectedLeafValues(3)
+    def getStartValue: String = expectedLeafValues(5)
+
+    def getEndValue: String = expectedLeafValues(10)
     def generateTestSample(): String =
       foldl("")((s: String, value: String) => {
-        s ++ s.isEmpty ?? (" ".repeat(Random.nextInt(5)), (s.charAt(s.length - 1) match {
+        s ++ s.isEmpty ?? (" ".repeat(Random.nextInt(5)), s.charAt(s.length - 1) match {
           case '>' | '<' => ""
           case _         => " ".repeat(Random.nextInt(5))
-        })) ++ value
+        }) ++ value
       })(expectedLeafValues)
         .replaceAll(epsilon.toString, "")
     def verifyAnswer(parsed: Tree[_]): Boolean =
@@ -82,11 +85,4 @@ object TestUtil {
     Random.nextBoolean()
   )
 
-}
-
-object Ac {
-  def main(args: Array[String]): Unit = {
-    val sample = TestSample(List(" 1", "2", "3"))
-    println(randomName)
-  }
 }

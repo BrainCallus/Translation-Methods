@@ -35,10 +35,15 @@ object GrammarEntry {
     override def parseState(analyzer: LexicalAnalyzer, grammar: Grammar): StateResult = {
       val derivation = chooseDerivationByFirst(analyzer.getCurToken, grammar)
       if (derivation.isEmpty && !getFIRST(grammar).contains(Token.EPS)) {
-        throw new ParseException(s"Unexpected token found: ${analyzer.getCurToken}")
+        throw new ParseException(
+          s"Unexpected token at position ${analyzer.currentPosition} found: ${analyzer.getCurToken}"
+        )
       }
 
-      derivation.isEmpty ?? ((analyzer, NonTerminalTree(name, List(Leaf((util.Constants.epsilon.toString, Token.EPS))))), {
+      derivation.isEmpty ?? ((
+        analyzer,
+        NonTerminalTree(name, List(Leaf((util.Constants.epsilon.toString, Token.EPS))))
+      ), {
         val children =
           foldl((analyzer, List.empty[Tree[_]]))((acc: StateMultiResult, entry: GrammarEntry) => {
             val stateAndTree = entry parseState (acc._1, grammar)

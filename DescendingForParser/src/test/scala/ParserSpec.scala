@@ -3,9 +3,10 @@ import exception.{NotMatchesForPattern, ParseException}
 import grammar_entry.Token
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
+import util.Constants.validTypeNames
 import util.Util.Ternary
 
-import scala.util.{Failure, Random, Success, Try}
+import scala.util.{Failure, Random, Try}
 
 class ParserSpec extends AnyFlatSpec with Matchers {
 
@@ -17,13 +18,19 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     }
   }
 
-  def testTrowsNotMatchesFor(replacement: String => String): Unit =
+  def testThrowsNotMatchesFor(func: TestSample => String): Unit = {
     for (_ <- 0 until DEFAULT_TEST_SIZE) {
-      assert(Try(Parser() parse replacement(generateTestSample.generateTestSample())) match {
+      val s = func(generateTestSample)
+      assert(Try(Parser() parse s) match {
         case Failure(NotMatchesForPattern) => true
         case _                             => false
       })
     }
+  }
+
+  def testTrowsNotMatchesFor(replacement: String => String): Unit = {
+    testThrowsNotMatchesFor(sample => replacement(sample.generateTestSample()))
+  }
 
   it should "throw NotMatchesForPattern reports that given string doesn't match for-pattern if 'for' has uppercase letters" in {
     val upperFors = List("For", "fOr", "foR", "FOr", " fOR", "FOR")
@@ -101,7 +108,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "throw NotMatchesForPattern increment and decrement is invalid" in {
+  it should "throw NotMatchesForPattern if increment and decrement is invalid" in {
     val invalid = List("+ +", "- -", "+-", "-+", "+=", "-=", "+ -", "- +")
     invalid.foreach(op => {
       testTrowsNotMatchesFor(s =>
@@ -115,6 +122,85 @@ class ParserSpec extends AnyFlatSpec with Matchers {
       s.replaceAll(Token.INC.getPatternAsString, "+=" + randomNumber().toString)
         .replaceAll("--", "-=" + randomNumber().toString)
     )
+  }
+
+  it should "throw NotMatchesForPattern if type name invalid or missed" in {
+    testTrowsNotMatchesFor(s =>
+      s.replaceAll(
+        Token.TYPE_NAME.getPatternAsString,
+        (() => {
+          val gen = randomLatinString()
+          validTypeNames.contains(gen) ?? ("", gen)
+        }).apply()
+      )
+    )
+  }
+
+  it should "throw NotMatchesForPattern if no whitespace between name and typename" in {
+    testTrowsNotMatchesFor(s => {
+      s.replaceAll(s"(${Token.TYPE_NAME.getPatternAsString})\\s+", "$1")
+    })
+  }
+
+  it should "throw NotMatchesForPattern if variable name different" in {
+    testThrowsNotMatchesFor(sample => {
+      val name = sample.expectedLeafValues.apply(3)
+      val parts = sample.generateTestSample().split(name)
+      val gen = randomLatinString()
+      val alter = (gen == name) ?? ("", gen)
+      parts.apply(0) + name + (Random.nextInt(3) match {
+        case 0 => parts.apply(1) + alter + parts(2) + name
+        case 1 => parts(1) + name + parts(2) + alter
+        case 2 => parts(1) + alter + parts(2) + randomLatinString()
+      }) + parts(3)
+    })
+  }
+
+  it should "throw NotMatchesForPattern if variable name starts with digit" in {
+    testThrowsNotMatchesFor(sample => {
+      sample.generateTestSample().replaceAll(sample.getVarName, Random.nextInt(10).toString + sample.getVarName)
+    })
+  }
+
+  it should "throw NotMatchesForPattern if variable name contain invalid characters" in {
+    val chars = "+-=()*&^%#@!~`\"'./,;:?><| "
+    chars.foreach(ch => {
+      testThrowsNotMatchesFor(sample => {
+        val gen = sample.generateTestSample()
+        gen.replaceAll(
+          sample.getVarName,
+          (sample.getVarName.length > 1) ?? ({
+            val pos = Random.nextInt(math.max(1, sample.getVarName.length - 1)) + 1
+            sample.getVarName.substring(0, pos) + ch.toString + sample.getVarName.substring(pos)
+          }, sample.getVarName + ch.toString + sample.getVarName)
+        )
+      })
+    })
+  }
+
+  it should "throw ParseException if name is one of the types" in {
+    validTypeNames.foreach(typeName => {
+      for (_ <- 0 until DEFAULT_TEST_SIZE) {
+        val sample = generateTestSample
+        assertThrows[ParseException](
+          Parser().parse(sample.generateTestSample().replaceAll(sample.expectedLeafValues(3), typeName))
+        )
+      }
+    })
+  }
+
+  it should "throw NotMatchesForPattern if initial or last variable value is not a number" in {
+    testThrowsNotMatchesFor(sample => {
+      sample
+        .generateTestSample()
+        .replaceAll(
+          Random.nextBoolean() ?? (sample.getStartValue, sample.getEndValue),
+          randomLatinString(10) match {
+            case x if Token.NUMBER.getPattern.matcher(x).matches() => ""
+            case y                                                 => y
+          }
+        )
+    })
   }
 
 }
