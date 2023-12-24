@@ -14,7 +14,7 @@ digraph G {
 4 -> 6
 7 [label = "[EQ, =]"]
 4 -> 7
-8 [label = "[NUMBER, -965884343]"]
+8 [label = "[NUMBER, -987654321]"]
 4 -> 8
 9 [label = "[SEMICOLON, ;]"]
 3 -> 9
@@ -32,7 +32,7 @@ digraph G {
 12 -> 15
 16 [label = "[EQ, =]"]
 15 -> 16
-17 [label = "[NUMBER, 17556987]"]
+17 [label = "[NUMBER, 123456789]"]
 10 -> 17
 18 [label = "[SEMICOLON, ;]"]
 3 -> 18

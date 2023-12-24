@@ -57,7 +57,7 @@ object TestUtil {
       )
   }
 
-  val DEFAULT_TEST_SIZE = 1000
+  val DEFAULT_TEST_SIZE = 10000
   def latinLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
   def validChars: String = latinLetters ++ Range.Int(0, 10, 1).mkString("")
 
@@ -84,5 +84,4 @@ object TestUtil {
     Random.nextBoolean(),
     Random.nextBoolean()
   )
-
 }
