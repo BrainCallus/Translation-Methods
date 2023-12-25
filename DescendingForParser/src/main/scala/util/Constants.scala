@@ -41,7 +41,8 @@ object Constants {
       Token.NUMBER.getPatternAsString,
       Token.SEMICOLON.getPatternAsString,
       "\\2",
-      "(" + Token.INC.getPatternAsString + "|" + Token.DEC.getPatternAsString + ")",
+      s"(${Token.INC.getPatternAsString}|${Token.DEC.getPatternAsString}|"
+        +s"(${Token.INC_N.getPatternAsString}|${Token.DEC_N.getPatternAsString})\\s*${Token.NUMBER.getPatternAsString})",
       Token.RPAREN.getPatternAsString
     )
 
@@ -56,7 +57,8 @@ object Constants {
     "CMP" -> NonTerminal("CMP", Seq(List("LT_GT", "Strict"))),
     "LT_GT" -> NonTerminal("LT_GT", Seq(List("LT"), List("GT"))),
     "Strict" -> NonTerminal("Strict", Seq(List("EQ"), List("EPS"))),
-    "INC_DEC" -> NonTerminal("INC_DEC", Seq(List("INC"), List("DEC")))
+    "INC_DEC" -> NonTerminal("INC_DEC", Seq(List("INC"), List("DEC"), List("INC_DEC_N", "NUMBER"))),
+    "INC_DEC_N" -> NonTerminal("INC_DEC_N", Seq(List("INC_N"), List("DEC_N")))
   )
 
 }

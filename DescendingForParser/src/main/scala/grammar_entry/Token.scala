@@ -24,6 +24,8 @@ object Token extends Enum[Token] {
   case object FOR extends Token("for")
   case object INC extends Token("\\+\\+")
   case object DEC extends Token("--")
+  case object INC_N extends Token("\\+=")
+  case object DEC_N extends Token("-=")
   case object EQ extends Token("=")
   case object LT extends Token("<")
   case object GT extends Token(">")

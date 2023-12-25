@@ -36,21 +36,23 @@ P3 -> NAME INC_DEC
 CMP -> LT_GT STRICT
 LT_GT -> LT | GT
 STRICT -> EPS | EQ
-INC_DEC -> INC | DEC
+INC_DEC -> INC | DEC | INC_DEC_N NUMBER
+INC_DEC_N -> INC_N | DEC_N
 ```
 
 ## Lexical analyzer
-| **NonTerminal** | **Description**                        |
-|-----------------|----------------------------------------|
-| **S**           | Start non-terminal                     |
-| **INNER**       | Parameters, separated by semicolon     |
-| **P1**          | First parameter                        |
-| **P2**          | Second parameter                       |
-| **P3**          | Third parameter                        |
-| **CMP**         | Comparison                             |
-| **LT_GT**       | Comparison operator                    |
-| **STRICT**      | Indicator of the comparison strictness |
-| **INC_DEC**     | Increment/decrement operation          |
+| **NonTerminal** | **Description**                            |
+|-----------------|--------------------------------------------|
+| **S**           | Start non-terminal                         |
+| **INNER**       | Parameters, separated by semicolon         |
+| **P1**          | First parameter                            |
+| **P2**          | Second parameter                           |
+| **P3**          | Third parameter                            |
+| **CMP**         | Comparison                                 |
+| **LT_GT**       | Comparison operator                        |
+| **STRICT**      | Indicator of the comparison strictness     |
+| **INC_DEC**     | Increment/decrement operation              |
+| **INC_DEC_N**   | Increment/decrement operation with numbers |
 
 
 ## Syntax analyzer
@@ -62,6 +64,8 @@ INC_DEC -> INC | DEC
 | **for**       | FOR       |
 | ++            | INC       |
 | --            | DEC       |
+| +=            | INC_N     |
+| -=            | DEC_N     |
 | =             | EQ        |
 | <             | LT        |
 | `>            | GT        |
@@ -72,17 +76,18 @@ INC_DEC -> INC | DEC
 | $             | END       |
 
 ## FIRST & FOLLOW
-| **NonTerminal** | **FIRST** | **FOLLOW** |
-|-----------------|-----------|------------|
-| **S**           | FOR       | END        |
-| **INNER**       | TYPE_NAME | RPAREN     |
-| **P1**          | TYPE_NAME | SEMICOLON  |
-| **P2**          | NAME      | SEMICOLON  |
-| **P3**          | NAME      | RPAREN     |
-| **CMP**         | LT, GT    | NUMBER     |
-| **LT_GT**       | LT, GT    | EPS, EQ    |
-| **STRICT**      | EQ, EPS   | NUMBER     |
-| **INC_DEC**     | INC, DEC  | RPAREN     |
+| **NonTerminal** | **FIRST**              | **FOLLOW** |
+|-----------------|------------------------|------------|
+| **S**           | FOR                    | END        |
+| **INNER**       | TYPE_NAME              | RPAREN     |
+| **P1**          | TYPE_NAME              | SEMICOLON  |
+| **P2**          | NAME                   | SEMICOLON  |
+| **P3**          | NAME                   | RPAREN     |
+| **CMP**         | LT, GT                 | NUMBER     |
+| **LT_GT**       | LT, GT                 | EPS, EQ    |
+| **STRICT**      | EQ, EPS                | NUMBER     |
+| **INC_DEC**     | INC, DEC, INC_N, DEC_N | RPAREN     |
+| **INC_DEC_N**   | INC_N, DEC_N           | RPAREN     |
 
 ## Parse tree
 ```

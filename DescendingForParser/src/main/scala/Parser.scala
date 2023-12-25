@@ -11,7 +11,7 @@ case class Parser() {
   def parse(input: String): Tree[_] = {
     validateMatchesFor(input)
     val grammar = Grammar(Constants.derivations, Token.values.map(t => (t.toString, Terminal(t))).toMap)
-    val analyzer = LexicalAnalyzer(prepareExpression(Token.values)(input))
+    val analyzer = LexicalAnalyzer(prepareExpression(Token.values)(input).replaceAll("([+-])\\s+=", "$1="))
 
     try {
       (grammar.getDerivation("S") parseState (analyzer.moveNext(), grammar))._2
