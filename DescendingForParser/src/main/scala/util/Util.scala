@@ -52,7 +52,6 @@ object Util {
         foldl(acc)((accum: List[String], tree: Tree[_]) => {
           accum ++ treeToStringList(tree)
         })(children)
-
     }
 
   def foldl[T, E](accum: E)(func: (E, T) => E)(list: List[T]): E = doFoldl(accum)(func)(list)

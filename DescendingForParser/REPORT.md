@@ -40,20 +40,7 @@ INC_DEC -> INC | DEC
 ```
 
 ## Lexical analyzer
-| **NonTerminal** | **Description**                        |
-|-----------------|----------------------------------------|
-| **S**           | Start non-terminal                     |
-| **INNER**       | Parameters, separated by semicolon     |
-| **P1**          | First parameter                        |
-| **P2**          | Second parameter                       |
-| **P3**          | Third parameter                        |
-| **CMP**         | Comparison                             |
-| **LT_GT**       | Comparison operator                    |
-| **STRICT**      | Indicator of the comparison strictness |
-| **INC_DEC**     | Increment/decrement operation          |
 
-
-## Syntax analyzer
 | **Terminal**  | **Токен** |
 |---------------|-----------|
 | **(**         | LPAREN    |
@@ -71,7 +58,20 @@ INC_DEC -> INC | DEC
 | **` `**       | EPS       |
 | $             | END       |
 
-## FIRST & FOLLOW
+| **NonTerminal** | **Description**                        |
+|-----------------|----------------------------------------|
+| **S**           | Start non-terminal                     |
+| **INNER**       | Parameters, separated by semicolon     |
+| **P1**          | First parameter                        |
+| **P2**          | Second parameter                       |
+| **P3**          | Third parameter                        |
+| **CMP**         | Comparison                             |
+| **LT_GT**       | Comparison operator                    |
+| **STRICT**      | Indicator of the comparison strictness |
+| **INC_DEC**     | Increment/decrement operation          |
+
+
+## Syntax analyzer (FIRST & FOLLOW)
 | **NonTerminal** | **FIRST** | **FOLLOW** |
 |-----------------|-----------|------------|
 | **S**           | FOR       | END        |

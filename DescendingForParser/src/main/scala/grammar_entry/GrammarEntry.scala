@@ -20,8 +20,7 @@ object GrammarEntry {
   final case class Terminal(token: Token) extends GrammarEntry {
     override def parseState(analyzer: LexicalAnalyzer, grammar: Grammar): StateResult = {
       State[LexicalAnalyzer, Tree[_]](lex => {
-        val res = Leaf(lex.getValueAndToken)
-        (lex.moveNext(), res)
+        (lex.moveNext(), Leaf(lex.getValueAndToken))
       }).run(analyzer).value
     }
   }
@@ -87,6 +86,5 @@ object GrammarEntry {
 
   object NonTerminal {
     def apply(name: String, rules: Seq[List[String]]) = new NonTerminal(name, rules.toSet[List[String]])
-
   }
 }
