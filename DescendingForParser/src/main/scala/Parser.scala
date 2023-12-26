@@ -31,7 +31,7 @@ case class Parser() {
       ("^ " + input + Token.END.getPatternAsString).trim().replaceAll("\\s+", " ")
     } else {
       prepareExpression(tokens, idx + 1)(
-        (tokens(idx) == Token.EPS || tokens(idx) == Token.NUMBER) ?? (input,
+        (tokens(idx) == Token.EPS || tokens(idx) == Token.NUMBER || tokens(idx) == Token.TYPE_NAME) ?? (input,
         input.replaceAll(tokens(idx).getPatternAsString, " $0 "))
       )
     }
