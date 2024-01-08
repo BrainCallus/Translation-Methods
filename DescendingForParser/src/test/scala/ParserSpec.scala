@@ -12,7 +12,15 @@ class ParserSpec extends AnyFlatSpec with Matchers {
 
   "parse" should "parse correct for expression" in {
     for (_ <- 0 until DEFAULT_TEST_SIZE) {
-      val sample = generateTestSample
+      val sample = generateTestSample(false)
+      val parsed = Parser().parse(sample.generateTestSample())
+      assert(sample.verifyAnswer(parsed))
+    }
+  }
+
+  "parse ++i| --i" should "parse correct expression with prefix increment|decrement" in {
+    for (_ <- 0 until DEFAULT_TEST_SIZE) {
+      val sample = generateTestSample(true)
       val parsed = Parser().parse(sample.generateTestSample())
       assert(sample.verifyAnswer(parsed))
     }
@@ -20,7 +28,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
 
   def testThrowsNotMatchesFor(func: TestSample => String): Unit = {
     for (_ <- 0 until DEFAULT_TEST_SIZE) {
-      val s = func(generateTestSample)
+      val s = func(generateTestSample(false))
       assert(Try(Parser() parse s) match {
         case Failure(NotMatchesForPattern) => true
         case _                             => false
@@ -32,7 +40,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
     testThrowsNotMatchesFor(sample => replacement(sample.generateTestSample()))
   }
 
-  it should "throw NotMatchesForPattern reports that given string doesn't match for-pattern if 'for' has uppercase letters" in {
+  "parse" should "throw NotMatchesForPattern reports that given string doesn't match for-pattern if 'for' has uppercase letters" in {
     val upperFors = List("For", "fOr", "foR", "FOr", " fOR", "FOR")
     upperFors.foreach(forr => {
       testTrowsNotMatchesFor(s => s.replaceAll(Token.FOR.getPatternAsString, forr))
@@ -181,7 +189,7 @@ class ParserSpec extends AnyFlatSpec with Matchers {
   it should "throw ParseException if name is one of the types" in {
     validTypeNames.foreach(typeName => {
       for (_ <- 0 until DEFAULT_TEST_SIZE) {
-        val sample = generateTestSample
+        val sample = generateTestSample(false)
         assertThrows[ParseException](
           Parser().parse(sample.generateTestSample().replaceAll(sample.expectedLeafValues(3), typeName))
         )

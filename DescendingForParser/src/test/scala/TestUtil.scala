@@ -1,4 +1,5 @@
 import functional.Tree
+import grammar_entry.Token
 import util.Constants.{epsilon, validTypeNames}
 import util.Util._
 
@@ -20,6 +21,9 @@ object TestUtil {
         }) ++ value
       })(expectedLeafValues)
         .replaceAll(epsilon.toString, "")
+
+    def generateSampleIncDecPrefix(): String =
+      generateTestSample().replaceAll(s"(${Token.NAME.getPatternAsString})(\\s*)(--|\\+\\+)", "$4$3$2")
     def verifyAnswer(parsed: Tree[_]): Boolean =
       foldl(true)((acc: Boolean, entry: (String, String)) => acc && entry._1 == entry._2.trim)(
         treeToStringList(parsed).zip(expectedLeafValues)
@@ -35,26 +39,50 @@ object TestUtil {
       lt: Boolean,
       strict: Boolean,
       inc: Boolean
-    ): TestSample =
-      TestSample(
-        List(
-          "for",
-          "(",
-          varType ++ " ",
-          name,
-          "=",
-          startValue.toString,
-          ";",
-          name,
-          lt ?? ("<", ">"),
-          strict ?? ("=", epsilon.toString),
-          endValue.toString,
-          ";",
-          name,
-          inc ?? ("++", "--"),
-          ")"
+    )(incPrefix: Boolean): TestSample = {
+      if(incPrefix) {
+        TestSample(
+          List(
+            "for",
+            "(",
+            varType ++ " ",
+            name,
+            "=",
+            startValue.toString,
+            ";",
+            name,
+            lt ?? ("<", ">"),
+            strict ?? ("=", epsilon.toString),
+            endValue.toString,
+            ";",
+            name,
+            inc ?? ("++", "--"),
+            ")"
+          )
         )
-      )
+      }
+      else {
+        TestSample(
+          List(
+            "for",
+            "(",
+            varType ++ " ",
+            name,
+            "=",
+            startValue.toString,
+            ";",
+            name,
+            lt ?? ("<", ">"),
+            strict ?? ("=", epsilon.toString),
+            endValue.toString,
+            ";",
+            name,
+            inc ?? ("++", "--"),
+            ")"
+          )
+        )
+      }
+    }
   }
 
   val DEFAULT_TEST_SIZE = 10000
@@ -75,7 +103,7 @@ object TestUtil {
     val first = latinLetters.charAt(Random.nextInt(latinLetters.length))
     first.toString ++ randomLatinString(20)
   }
-  def generateTestSample: TestSample = TestSample(
+  def generateTestSample(incPrefix: Boolean): TestSample = TestSample(
     getRandomType,
     randomName,
     randomNumber(),
@@ -83,5 +111,5 @@ object TestUtil {
     Random.nextBoolean(),
     Random.nextBoolean(),
     Random.nextBoolean()
-  )
+  )(incPrefix)
 }
