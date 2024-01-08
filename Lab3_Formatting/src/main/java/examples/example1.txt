@@ -1,0 +1,63 @@
+package not_package;
+
+
+
+
+
+
+import org.antlr.v4.runtime.CommonTokenStream;
+
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import java.text.ParseException;
+
+public class Main {public static void main( String[   ]args) {
+        switch
+ (node.toString()) {
+            case "<EOF>"
+
+
+
+
+            :return;
+    case ",":
+           addTerminal(node.toString() + " ");
+                break;
+            case "}":
+                addTerminal   ("\n" + tabOffset() + node.toString());
+                break;
+            default:
+                              addTerminal(node.toString());
+        }
+        String s="a or b xor c or     d";
+        try {
+            Tree result = new
+            Parser().parse(s);
+            result.writeGraphToFile("code/src/graphviz2.txt");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        for (int i   = 0; i < 4   ;   i   ++) {
+
+        }
+    }
+
+
+protected synchronized NewType variable(){
+ var kek = "lol";
+ NOTHING = new None(a);
+ return NOTHING;}
+
+
+
+    void tFunc()
+    {
+
+
+        }
+
+}
+
+            class T {
+
+}
+
