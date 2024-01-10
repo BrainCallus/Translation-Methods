@@ -7,7 +7,7 @@ import java.nio.file.Path;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        CharStream text = CharStreams.fromPath(Path.of("src\\main\\java\\examples\\example1.txt"));
+        CharStream text = CharStreams.fromPath(Path.of("src\\main\\java\\examples\\generic.txt"));
 
         JavaCodeFormatListener formatListener = new JavaCodeFormatListener();
         (new ParseTreeWalker()).walk(formatListener,

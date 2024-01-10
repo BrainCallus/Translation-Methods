@@ -377,6 +377,26 @@ public interface JavaCodeListener extends ParseTreeListener {
 	 */
 	void exitFuncCalledArgs(JavaCodeParser.FuncCalledArgsContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link JavaCodeParser#generic}.
+	 * @param ctx the parse tree
+	 */
+	void enterGeneric(JavaCodeParser.GenericContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaCodeParser#generic}.
+	 * @param ctx the parse tree
+	 */
+	void exitGeneric(JavaCodeParser.GenericContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaCodeParser#genericToken}.
+	 * @param ctx the parse tree
+	 */
+	void enterGenericToken(JavaCodeParser.GenericTokenContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaCodeParser#genericToken}.
+	 * @param ctx the parse tree
+	 */
+	void exitGenericToken(JavaCodeParser.GenericTokenContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link JavaCodeParser#typeToken}.
 	 * @param ctx the parse tree
 	 */

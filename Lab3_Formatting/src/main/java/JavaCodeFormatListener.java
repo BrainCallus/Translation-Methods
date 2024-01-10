@@ -148,6 +148,11 @@ public class JavaCodeFormatListener extends JavaCodeBaseListener {
     }
 
     @Override
+    public void exitGenericToken(JavaCodeParser.GenericTokenContext ctx) {
+        mkString(SPACE);
+    }
+
+    @Override
     public void enterEveryRule(ParserRuleContext ctx) {
         tree = new Tree().buildFromAncestor(tree);
     }
@@ -196,6 +201,7 @@ public class JavaCodeFormatListener extends JavaCodeBaseListener {
         tree.addToResult(tree.getChildren().get(0).getResult() + SPACE);
         mkString(tree.getChildren().stream().skip(1));
     }
+
     private void addTerminal(String s) {
         new Tree(s).buildFromAncestor(tree);
     }

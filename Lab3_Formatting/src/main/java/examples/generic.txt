@@ -1,0 +1,10 @@
+class T <?  extends A      implements B> {
+
+    static class  Example        <E implements Ex>{
+
+     List< Integer >
+       list = new ArrayList<    >( );}
+
+
+
+ }

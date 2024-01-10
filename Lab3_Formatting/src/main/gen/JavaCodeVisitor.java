@@ -232,6 +232,18 @@ public interface JavaCodeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFuncCalledArgs(JavaCodeParser.FuncCalledArgsContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link JavaCodeParser#generic}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitGeneric(JavaCodeParser.GenericContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link JavaCodeParser#genericToken}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitGenericToken(JavaCodeParser.GenericTokenContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link JavaCodeParser#typeToken}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

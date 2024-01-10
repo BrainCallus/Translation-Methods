@@ -10,7 +10,7 @@ programmEntities : codeEntry+;
 codeEntry : declaration codeBody;
     declaration : declarationBegin declarationRest?;
         declarationBegin: declarationPrefix ('(' funcDeclarationArgs ')')?;
-            declarationPrefix : (keyWord | typeToken)+;
+            declarationPrefix : (keyWord | typeToken | generic)+;
         declarationRest : keyWordAndTokens+;
     codeBody : '{' innerCode? '}';
         innerCode : programmEntities | (executableLine | executableStatement | switchStatement)+;
@@ -50,7 +50,10 @@ justValue : '(' value ')'
 funcToken : typeToken funcCalledArgs?;
 funcCalledArgs : '(' (value (Comma value)*)? ')';
 
-typeToken : varToken  ('['']')*;
+generic: Langle (genericToken (Comma genericToken)*)? Rangle;
+    genericToken: (typeToken | Question) keyWordAndTokens*;
+
+typeToken : varToken generic? ('['']')*;
 varToken : NAME ('.' NAME)*;
 
 keyWordAndTokens: keyWord typeTokensComma;
