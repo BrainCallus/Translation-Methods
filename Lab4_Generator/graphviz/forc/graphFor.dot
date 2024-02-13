@@ -1,0 +1,45 @@
+digraph G {
+0 [label = "S"]
+1 [label = "[FOR, for]"]
+0 -> 1
+2 [label = "[LPAREN, (]"]
+0 -> 2
+3 [label = "INNER"]
+0 -> 3
+4 [label = "P1"]
+3 -> 4
+5 [label = "[TYPE_NAME, long]"]
+4 -> 5
+6 [label = "[NAME, for1i]"]
+4 -> 6
+7 [label = "[EQ, =]"]
+4 -> 7
+8 [label = "[NUMBER, 1000]"]
+4 -> 8
+9 [label = "[SEMICOLON, ;]"]
+3 -> 9
+10 [label = "P2"]
+3 -> 10
+11 [label = "[NAME, for1i]"]
+10 -> 11
+12 [label = "CMP"]
+10 -> 12
+13 [label = "[NGT, <=]"]
+12 -> 13
+14 [label = "[NUMBER, -10]"]
+10 -> 14
+15 [label = "[SEMICOLON, ;]"]
+3 -> 15
+16 [label = "P3"]
+3 -> 16
+17 [label = "[NAME, for1i]"]
+16 -> 17
+18 [label = "INC_DEC"]
+16 -> 18
+19 [label = "[DEC, --]"]
+18 -> 19
+20 [label = "[RPAREN, )]"]
+0 -> 20
+21 [label = "[EOF, ]"]
+0 -> 21
+}
