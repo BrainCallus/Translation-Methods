@@ -5,17 +5,15 @@ import calculator.dsl.Algebraic.BinaryOperation
 import calculator.dsl.Expression.{generateArbitraryExpression, generateSimpleBinOp}
 import calculator.dsl.ExpressionModules._
 import calculator.dsl.{Algebraic, Calculator, Expression}
-import common.{ParserSpec, TestSample}
+import common.ParserSpec
 import util.CommonUtils.treeToStringList
 import common.RandomUtil.{generateVarName, randDouble, unbiasedCoin}
 import org.scalatest.Assertion
-import util.GrammarTree
 import util.Ternary.Ternary
 import util.WriteUtil.{clearDirectoryFiles, makeGraph}
 
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
-import java.text.ParseException
 
 class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
   private val outputDir = "graphviz\\calculator"
@@ -25,15 +23,22 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
     CalculatorParser(bytes).calculator()
 
   override def verifyParseResult(res: CalculatorContext, sample: Calculator, id: String): Assertion = {
-    val diff = math.abs(res.res - sample.res.toDouble)
-    if (diff > 1e-5) {
-      println(s"real expression: ${sample.expression}")
-      println(s"sample: ${sample.generateStringSample.replaceAll("\\s+", " ")}")
-      println(s"parsed: ${treeToStringList(res).mkString(" ")}")
-      println(s"diff: $diff")
-      makeGraph(res, s"$outputDir\\graphCalc$id.dot")
+    val expectedRes = sample.res.toDouble
+    expectedRes match {
+      case x if x == Double.NegativeInfinity || x == Double.PositiveInfinity => assert(expectedRes == res.res)
+      case y if y.isNaN                                                      => assert(res.res.isNaN)
+      case _ =>
+        val diff = math.abs(res.res - expectedRes)
+
+        if (diff > 1e-5) {
+          println(s"real expression: ${sample.expression}")
+          println(s"sample: ${sample.generateStringSample.replaceAll("\\s+", " ")}")
+          println(s"parsed: ${treeToStringList(res).mkString(" ")}")
+          println(s"diff: $diff")
+          makeGraph(res, s"$outputDir\\graphCalc$id.dot")
+        }
+        assert(diff / math.abs(expectedRes + 1e-9) <= 1e-5)
     }
-    assert(diff / math.abs(sample.res.toDouble + 1e-9) <= 1e-5)
   }
 
   "calculator" should "parse and calculate numbers correct" in {
