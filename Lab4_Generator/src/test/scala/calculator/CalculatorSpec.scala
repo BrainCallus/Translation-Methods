@@ -5,17 +5,15 @@ import calculator.dsl.Algebraic.BinaryOperation
 import calculator.dsl.Expression.{generateArbitraryExpression, generateSimpleBinOp}
 import calculator.dsl.ExpressionModules._
 import calculator.dsl.{Algebraic, Calculator, Expression}
-import common.{ParserSpec, TestSample}
+import common.ParserSpec
 import util.CommonUtils.treeToStringList
 import common.RandomUtil.{generateVarName, randDouble, unbiasedCoin}
 import org.scalatest.Assertion
-import util.GrammarTree
 import util.Ternary.Ternary
 import util.WriteUtil.{clearDirectoryFiles, makeGraph}
 
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
-import java.text.ParseException
 
 class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
   private val outputDir = "graphviz\\calculator"
@@ -25,20 +23,27 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
     CalculatorParser(bytes).calculator()
 
   override def verifyParseResult(res: CalculatorContext, sample: Calculator, id: String): Assertion = {
-    val diff = math.abs(res.res - sample.res.toDouble)
-    if (diff > 1e-5) {
-      println(s"real expression: ${sample.expression}")
-      println(s"sample: ${sample.generateStringSample.replaceAll("\\s+", " ")}")
-      println(s"parsed: ${treeToStringList(res).mkString(" ")}")
-      println(s"diff: $diff")
-      makeGraph(res, s"$outputDir\\graphCalc$id.dot")
+    val expectedRes = sample.res.toDouble
+    expectedRes match {
+      case x if x == Double.NegativeInfinity || x == Double.PositiveInfinity => assert(expectedRes == res.res)
+      case y if y.isNaN                                                      => assert(res.res.isNaN)
+      case _ =>
+        val diff = math.abs(res.res - expectedRes)
+
+        if (diff > 1e-5) {
+          println(s"real expression: ${sample.expression}")
+          println(s"sample: ${sample.generateStringSample.replaceAll("\\s+", " ")}")
+          println(s"parsed: ${treeToStringList(res).mkString(" ")}")
+          println(s"diff: $diff")
+          makeGraph(res, s"$outputDir\\graphCalc$id.dot")
+        }
+        assert(diff / math.abs(expectedRes + 1e-9) <= 1e-5)
     }
-    assert(diff / math.abs(sample.res.toDouble + 1e-9) <= 1e-5)
+
   }
 
   "calculator" should "parse and calculate numbers correct" in {
     validSeries(buildCalc(ExprVerify.number(randDouble)), "Number")
-
   }
 
   it should "parse and calculate numbers surrounded brackets" in {
@@ -51,7 +56,10 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
 
   it should "parse and calculate simple binary operations surrounded brackets" in {
     validSeries(buildCalc(ExprVerify.inBrackets(generateSimpleBinOp[Verifiers]())), "OpBrackets")
+  }
 
+  it should "parse and calculate unary minus operation" in {
+    validSeries(buildCalc(ExprVerify.unoMinus(generateArbitraryExpression[Verifiers]())), "UnaryMinus")
   }
 
   it should "parse and calculate random correct expression" in {
@@ -77,7 +85,9 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
   it should "throw ParseException if at least one operand missed" in {
     List("+", "-", "*", "/").foreach(op => {
       invalidSeries(buildCalc(generateArbitraryExpression[Verifiers]()), c => c.generateStringSample + op)
-      invalidSeries(buildCalc(generateArbitraryExpression[Verifiers]()), c => op + c.generateStringSample)
+      if (op != "-") {
+        invalidSeries(buildCalc(generateArbitraryExpression[Verifiers]()), c => op + c.generateStringSample)
+      }
     })
   }
 

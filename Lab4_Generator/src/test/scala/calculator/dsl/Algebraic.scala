@@ -15,6 +15,8 @@ object Algebraic {
 
   }
 
+  abstract class UnoMinus[F[_]]() extends Algebraic[F]
+
   abstract class BinaryOperation[F[_]](
     val expression1: Algebraic[F],
     val expression2: Algebraic[F],
@@ -40,4 +42,7 @@ object Algebraic {
 
   abstract class Div[F[_]](override val expression1: Algebraic[F], override val expression2: Algebraic[F])
     extends BinaryOperation[F](expression1, expression2, "/", (5, 5, 7))
+
+  abstract class Exp[F[_]](override val expression1: Algebraic[F], override val expression2: Algebraic[F])
+    extends BinaryOperation[F](expression1, expression2, "^", (8, 7, 8))
 }

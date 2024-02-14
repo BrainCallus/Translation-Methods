@@ -1,9 +1,10 @@
 import antlr.{LexerGrammar, ParserGrammar}
 import calculator.CalculatorParser
+import calculator.CalculatorParser.CalculatorContext
 import forc.ForcParser
 import forc.ForcParser.ForcContext
 import generator.{LexerGenerator, ParserGenerator, TokenGenerator}
-import grammar.entry.{Attribute, GrammarEntry, NonTerminal, TranslatingSymbol}
+import grammar.entry.{GrammarEntry, NonTerminal, TranslatingSymbol}
 import grammar.{Grammar, LexerRule, ParserRule, Token}
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import prom.{JavaLexerRule, JavaParserRule}
@@ -15,25 +16,23 @@ import util.WriteUtil.makeGraph
 import java.io.ByteArrayInputStream
 import java.nio.file.{Files, Path}
 import java.util.Optional
-import java.util.stream.Collectors
 import scala.util.Try
 
 object Main {
 
-  def validateArgs(args:Array[String]) = {
-     args==null||args.length!=1&&args.length!=2||args.contains(null)
+  def validateArgs(args: Array[String]) = {
+    args == null || args.length != 1 && args.length != 2 || args.contains(null)
   }
 // todo: create gen/dir if no dir
   private val calcPath = "source_grammar\\Calculator.g4"
   private val forPath = "source_grammar\\Forc.g4"
-  private val genDir = Path.of( "src\\gen")
+  private val genDir = Path.of("src\\gen")
 
   def main(args: Array[String]): Unit = {
-    //if(!validateArgs(args)) {
+    // if(!validateArgs(args)) {
 
-   // }
+    // }
     generateAndRunCalc()
-
 
   }
 
@@ -46,12 +45,13 @@ object Main {
 
   private def generateAndRunCalc(): Unit = {
     generateFiles(calcPath)
-    val calculatorParser = new CalculatorParser(new ByteArrayInputStream(("((" +
-      "1 + (2" +
-      "))) *" +
-      " ((10)) /" +
-      " ((2)) + (    1)").getBytes()))
-    val res = calculatorParser.calculator()
+    val calculatorParser = new CalculatorParser(
+      new ByteArrayInputStream(
+        (" 4698.88076 ^ -6456.66656 ^ - ( -41.686080000000004 ) + - ( - ( 475.30811 ) ) + 1311.0102").getBytes()
+      )
+    )
+    val res: CalculatorContext = calculatorParser.calculator()
+    makeGraph(res, "graphviz\\calculator\\graphCalc.dot")
     println(res.res)
   }
 
@@ -71,7 +71,7 @@ object Main {
   private def prepareEnvironment(grammar: Grammar[_]): Path = {
     val packageGrammar = genDir.resolve(grammar.name.toLowerCase())
 
-    if(!Files.isDirectory(packageGrammar)) {
+    if (!Files.isDirectory(packageGrammar)) {
       Files.createDirectory(packageGrammar)
     }
     packageGrammar
@@ -90,13 +90,20 @@ object Main {
 
   private def toParserRules(parserRules: List[JavaParserRule]): List[ParserRule] = {
 
-    parserRules.map(pr => ParserRule(pr.name, convertList(pr.inheritAttrs), convertList(pr.synteticAttrs),
-      convertList(pr.parserRules).map(javaList => convertList(javaList).map(replaceNullSymbolsToEmpty)).toSet))
+    parserRules.map(pr =>
+      ParserRule(
+        pr.name,
+        convertList(pr.inheritAttrs),
+        convertList(pr.synteticAttrs),
+        convertList(pr.parserRules).map(javaList => convertList(javaList).map(replaceNullSymbolsToEmpty)).toSet
+      )
+    )
   }
 
   private def replaceNullSymbolsToEmpty[E <: GrammarEntry](entry: E): GrammarEntry =
     entry match {
-      case NonTerminal(name, value, symbol) => (symbol == null) ?? (NonTerminal(name, value, TranslatingSymbol("")), entry)
+      case NonTerminal(name, value, symbol) =>
+        (symbol == null) ?? (NonTerminal(name, value, TranslatingSymbol("")), entry)
       case _ => entry
     }
 
@@ -105,14 +112,14 @@ object Main {
   }
 
   private def javaOptionalToOption[T](opt: Optional[T]): Option[T] = {
-    if(opt.isEmpty){
+    if (opt.isEmpty) {
       None
     } else {
       Some(opt.get())
     }
   }
 
-  def generateParser(outDir: Path, grammar: Grammar[? <:Token]): Unit = {
+  def generateParser(outDir: Path, grammar: Grammar[? <: Token]): Unit = {
     val tokenGenerator = TokenGenerator(grammar)
     val lexerGenerator = LexerGenerator(grammar)
     val parserGenerator = ParserGenerator(grammar)
