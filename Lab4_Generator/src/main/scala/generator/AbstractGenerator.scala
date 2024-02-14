@@ -38,5 +38,4 @@ trait AbstractGenerator {
   }
 
   protected def getEnumName = s"${grammar.name}Token"
-
 }

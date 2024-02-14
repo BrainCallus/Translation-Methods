@@ -2,7 +2,6 @@ package util
 
 import util.Ternary._
 
-import scala.annotation.tailrec
 import scala.util.Random
 
 object RandomUtil {
@@ -10,7 +9,7 @@ object RandomUtil {
 
   def randInt(constraint: Int): Int = randPositiveInt(constraint) * randomSign
 
-  def randDouble: Double = limitedDouble * randomSign * randPositiveInt(Int.MaxValue/100000)
+  def randDouble: Double = limitedDouble * randomSign * randPositiveInt(Int.MaxValue / 100000)
 
   def unbiasedCoin: Boolean = Random.nextBoolean()
 
@@ -19,22 +18,15 @@ object RandomUtil {
     first.toString ++ randomLatinString(constraint - 1)
   }
 
-  def randomLatinString(constraint:Int): String =
+  def randomLatinString(constraint: Int): String =
     (0 until Random.nextInt(constraint)).map(_ => validChars.charAt(Random.nextInt(validChars.length))).mkString
 
   private val latinLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 
   private val validChars: String = latinLetters ++ Range.Int(0, 10, 1).mkString("")
 
- // @tailrec
   private def limitedDouble: Double = {
-    val d = Random.nextDouble()
-    if(d >= 1e-7) {
-      d
-    } else {
-      d// limitedDouble
-    }
+    BigDecimal(Random.nextDouble()).setScale(5, BigDecimal.RoundingMode.HALF_UP).doubleValue
   }
-
   private def randomSign: Int = Ternary(Random.nextBoolean()) ?? (-1, 1)
 }

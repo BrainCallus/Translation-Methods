@@ -12,7 +12,6 @@ import scala.util.Using
 case class LexerGenerator(grammar: Grammar[? <: Token]) extends AbstractGenerator { self =>
 
   private def IMPORTS: List[String] = List(
-    // todo:
     "grammar.LexerRule",
     "template.AbstractLexer",
     "java.text.ParseException",
@@ -32,24 +31,15 @@ case class LexerGenerator(grammar: Grammar[? <: Token]) extends AbstractGenerato
         _ <- writeState(
           writer,
           s"case class $className(inputStream: InputStream)\n" +
-           // s"lexerParams: LexerParams = LexerParams(TokenizedEmpty, 0, 0, -2))\n"
             s"  extends AbstractLexer[$getEnumName](inputStream) {"
         )(x => x + 1)
         _ <- writeState(writer, s"override val lexerRules = List($getLexerRulesAsString)")(identity)
         _ <- writeTokenWithName(writer).modify(_ -1)
-        //_ <- writeMoveNext(writer).modify(_ - 1)
         _ <- writeState(writer, "}")(identity)
       } yield ()
       state.runA(0).value
     }
   }
-
-  // private def writeConstructor(writer: BufferedWriter, className: String): State[Int, Unit] =
-  //  for {
-  //    _ <- writeState(writer, s"case class $className(InputStream inputStream) extends AbstractLexer {")(x=>x+1)
-  //    _ <- writeState(writer, s"val lexerRules = List($getLexerRulesAsString)")(identity)
-//
-  //  } yield()
 
   private def writeTokenWithName(writer: BufferedWriter): State[Int, Unit] = {
     for {
@@ -59,23 +49,12 @@ case class LexerGenerator(grammar: Grammar[? <: Token]) extends AbstractGenerato
     } yield ()
   }
 
-  private def writeMoveNext(writer: BufferedWriter): State[Int, Unit] = {
-    for {
-      _ <- writeState(
-        writer,
-        s"override protected def moveNext(is: InputStream, params: LexerParams): $getLexerName = "
-      )(_ + 1)
-      _ <- writeState(writer, s"$getLexerName(is, params)")(_ - 1)
-    } yield ()
-  }
-
   private def getLexerName: String = grammar.name + "Lexer"
 
   private def getLexerRulesAsString: String = {
 
     grammar.lexerRules
-      .map(rule => s"LexerRule[${getEnumName}](${getEnumName}.${rule.token.getName}, ${rule.skip})")
+      .map(rule => s"LexerRule[$getEnumName]($getEnumName.${rule.token.getName}, ${rule.skip})")
       .mkString("\n\t", ",\n\t", "\n  ")
   }
-
 }

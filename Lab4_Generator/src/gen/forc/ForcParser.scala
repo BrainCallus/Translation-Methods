@@ -13,11 +13,13 @@ import template.Tokenized._;
 case class ForcParser(inputStream: InputStream) {
 	val lex: ForcLexer = ForcLexer(inputStream)
 	lex.lexerParams = lex.nextToken()
+
 	case class CmpContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
 		var res: ContextTree = null
 		override def pushFirstChild(child: GrammarTree[_]) = CmpContext(ctxRoot, child::ctxChildren)
 		override def appendLastChild(child: GrammarTree[_]) = CmpContext(ctxRoot, ctxChildren ++ List(child))
 	 }
+
 	def cmp() : CmpContext = {
 		var ctx = CmpContext("cmp")
 		if(lex.curTokenIn(Set(ForcToken.LT))) {
@@ -64,11 +66,13 @@ case class ForcParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
+
 	case class P3Context(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
 		var res: ContextTree = null
 		override def pushFirstChild(child: GrammarTree[_]) = P3Context(ctxRoot, child::ctxChildren)
 		override def appendLastChild(child: GrammarTree[_]) = P3Context(ctxRoot, ctxChildren ++ List(child))
 	 }
+
 	def p3(name : String) : P3Context = {
 		var ctx = P3Context("p3")
 		if(lex.curTokenIn(Set(ForcToken.NAME))) {
@@ -90,11 +94,13 @@ case class ForcParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
+
 	case class P2Context(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
 		var res: ContextTree = null
 		override def pushFirstChild(child: GrammarTree[_]) = P2Context(ctxRoot, child::ctxChildren)
 		override def appendLastChild(child: GrammarTree[_]) = P2Context(ctxRoot, ctxChildren ++ List(child))
 	 }
+
 	def p2(name : String) : P2Context = {
 		var ctx = P2Context("p2")
 		if(lex.curTokenIn(Set(ForcToken.NAME))) {
@@ -122,11 +128,13 @@ case class ForcParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
+
 	case class ForcContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
 		var res: ContextTree = null
 		override def pushFirstChild(child: GrammarTree[_]) = ForcContext(ctxRoot, child::ctxChildren)
 		override def appendLastChild(child: GrammarTree[_]) = ForcContext(ctxRoot, ctxChildren ++ List(child))
 	 }
+
 	def forc() : ForcContext = {
 		var ctx = ForcContext("forc")
 		if(lex.curTokenIn(Set(ForcToken.FOR))) {
@@ -163,11 +171,13 @@ case class ForcParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
+
 	case class InnerContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
 		var res: ContextTree = null
 		override def pushFirstChild(child: GrammarTree[_]) = InnerContext(ctxRoot, child::ctxChildren)
 		override def appendLastChild(child: GrammarTree[_]) = InnerContext(ctxRoot, ctxChildren ++ List(child))
 	 }
+
 	def inner() : InnerContext = {
 		var ctx = InnerContext("inner")
 		if(lex.curTokenIn(Set(ForcToken.TYPE_NAME))) {
@@ -196,12 +206,14 @@ case class ForcParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
+
 	case class P1Context(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
 		var name: String = null
 		var res: ContextTree = null
 		override def pushFirstChild(child: GrammarTree[_]) = P1Context(ctxRoot, child::ctxChildren)
 		override def appendLastChild(child: GrammarTree[_]) = P1Context(ctxRoot, ctxChildren ++ List(child))
 	 }
+
 	def p1() : P1Context = {
 		var ctx = P1Context("p1")
 		if(lex.curTokenIn(Set(ForcToken.TYPE_NAME))) {
@@ -237,11 +249,13 @@ case class ForcParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
+
 	case class IncdecContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
 		var res: ContextTree = null
 		override def pushFirstChild(child: GrammarTree[_]) = IncdecContext(ctxRoot, child::ctxChildren)
 		override def appendLastChild(child: GrammarTree[_]) = IncdecContext(ctxRoot, ctxChildren ++ List(child))
 	 }
+
 	def incdec() : IncdecContext = {
 		var ctx = IncdecContext("incdec")
 		if(lex.curTokenIn(Set(ForcToken.INC))) {

@@ -17,17 +17,14 @@ trait TestSample {
   }
 
   def verifyResult(res: ContextTree): Boolean = {
-    foldl(true)(
-      (acc: Boolean, entry: (String, String)) =>
-        acc && entry._1 == entry._2
-    )(
+    foldl(true)((acc: Boolean, entry: (String, String)) => acc && entry._1 == entry._2)(
       treeToStringList(res).zip(expectedTokens)
     )
   }
 }
 
 object TestSample {
-   def getEnumArbitrary[E <: EnumEntry](values: IndexedSeq[E]): E = {
+  def getEnumArbitrary[E <: EnumEntry](values: IndexedSeq[E]): E = {
     values(randPositiveInt(values.length) - 1)
   }
 }

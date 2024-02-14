@@ -6,21 +6,21 @@ import util.Ternary.Ternary
 
 import scala.annotation.tailrec
 
-case class Grammar[T <:Token](
+final case class Grammar[T <: Token](
   name: String,
   headers: Option[TranslatingSymbol],
   parserRules: Map[String, ParserRule],
   lexerRules: List[LexerRule[T]],
   FIRST: FirstFollowMap,
-  FOLLOW: FirstFollowMap
-  , illegalTokens: Set[String] = Set("EOF")
+  FOLLOW: FirstFollowMap,
+  illegalTokens: Set[String] = Set("EOF")
 ) {
 
   def checkLL1(): Unit = {
-    for((ruleName, rule) <- parserRules) {
+    for ((ruleName, rule) <- parserRules) {
       val rules = rule.rules.toList
-      for(i <- 0 until(rules.length-1)) {
-        for(j <- i+1 until rules.length) {
+      for (i <- 0 until (rules.length - 1)) {
+        for (j <- i + 1 until rules.length) {
           val cur = getNextRule(rules(i), ruleName)
           val temp = getNextRule(rules(j), ruleName)
           if (cur.intersect(temp).nonEmpty) {
@@ -44,9 +44,9 @@ case class Grammar[T <:Token](
 
   }
 
-  def getNextRule(rule: List[GrammarEntry], ruleName: String):Set[String] = {
+  def getNextRule(rule: List[GrammarEntry], ruleName: String): Set[String] = {
     val nextElems = getFirst(rule, FIRST)
-    if(nextElems.contains(EPS)) {
+    if (nextElems.contains(EPS)) {
       nextElems.-(EPS).++(FOLLOW.apply(ruleName))
     } else {
       nextElems
@@ -75,16 +75,15 @@ object Grammar {
     grammar
   }
 
-
   @tailrec
   def getFirst(rule: List[GrammarEntry], first: FirstFollowMap): Set[String] =
     rule match {
       case Nil => Set(EPS)
       case x :: xs =>
         x match {
-          case term: Terminal => Set(term.value) // todo: term.name
+          case term: Terminal       => Set(term.value) // tod: term.name
           case _: TranslatingSymbol => getFirst(xs, first)
-          case nt: NonTerminal => first.getOrElse(nt.name, first.getOrElse(nt.value, Set.empty)) // todo: nt.name
+          case nt: NonTerminal      => first.getOrElse(nt.name, first.getOrElse(nt.value, Set.empty)) // tod: nt.name
 
         }
     }
@@ -155,7 +154,6 @@ object Grammar {
     }
   }
 
-
   private def extractFirstByRule(rule: List[GrammarEntry], first: FirstFollowMap): Set[String] =
     rule match {
       case Nil => Set(EPS)
@@ -164,13 +162,14 @@ object Grammar {
           case nt: NonTerminal =>
             first.get(nt.value) match {
               case Some(set) => set ++ (set.contains(EPS) ?? (extractFirstByRule(xs, first), Set.empty))
-              case None      => first.get(nt.name) match {
-                case Some(value) =>  value ++ (value.contains(EPS) ?? (extractFirstByRule(xs, first), Set.empty))
-                case None => Set.empty
-              }//Set.empty[String]
+              case None =>
+                first.get(nt.name) match {
+                  case Some(value) => value ++ (value.contains(EPS) ?? (extractFirstByRule(xs, first), Set.empty))
+                  case None        => Set.empty
+                } // Set.empty[String]
             }
           case _: TranslatingSymbol => extractFirstByRule(xs, first)
-          case term: Terminal       => Set(term.value)//todo term.value
+          case term: Terminal       => Set(term.value) // tod o term.value
         }
     }
 

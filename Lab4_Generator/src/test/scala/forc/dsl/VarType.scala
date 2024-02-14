@@ -2,11 +2,9 @@ package forc.dsl
 
 import enumeratum._
 
-sealed abstract class VarType(val name: String) extends EnumEntry{
+sealed abstract class VarType(val name: String) extends EnumEntry
 
-}
-
-object VarType extends Enum[VarType]{
+object VarType extends Enum[VarType] {
   case object INT extends VarType("int")
   case object LONG extends VarType("long")
   case object CHAR extends VarType("char")

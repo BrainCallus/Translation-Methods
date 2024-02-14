@@ -1,5 +1,3 @@
 package grammar
 
-case class LexerRule[T <: Token] (token: T, skip: Boolean) {
-
-}
+final case class LexerRule[T <: Token](token: T, skip: Boolean)

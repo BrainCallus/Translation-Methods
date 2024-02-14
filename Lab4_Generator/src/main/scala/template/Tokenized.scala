@@ -11,7 +11,7 @@ object Tokenized {
     override def text: String = ""
   }
 
-  case class TokenizedValue[+T <: Token](token: T, text: String, startIdx: Int, skip: Boolean) extends Tokenized {
+  final case class TokenizedValue[+T <: Token](token: T, text: String, startIdx: Int, skip: Boolean) extends Tokenized {
     def endIdx: Int = startIdx + text.length
 
     def tokenLen: Int = text.length

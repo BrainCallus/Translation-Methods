@@ -1,16 +1,16 @@
 package calculator.dsl
 
-import calculator.dsl.Expression._
+import calculator.dsl.Algebraic._
+import calculator.dsl.Expression.Verifiers
 import util.RandomUtil.{randDouble, randPositiveInt}
 import util.Ternary.Ternary
 import util.TestSample
 
-case class Calculator(expression: Expression) extends TestSample {
-  override def res: String = expression.res.toString
+case class Calculator(expression: Algebraic[Verifiers]) extends TestSample {
+  override def res: String = expression.res._1.toString
+  override def expectedTokens: List[String] = expression.res._2 ++ List("")
 
-  override def expectedTokens: List[String] = expression.expectedTokens ++ List("")
-
-  override def generateStringSample: String = expression.expectedTokens.foldLeft("") { (curStr, token) =>
+  override def generateStringSample: String = expression.res._2.foldLeft("") { (curStr, token) =>
     {
       curStr + " ".repeat(randPositiveInt(20)) ++ token
     }
@@ -18,27 +18,31 @@ case class Calculator(expression: Expression) extends TestSample {
 }
 
 object Calculator {
-  val operations: Seq[(Expression, Expression) => BinaryOperation] = List(Add, Sub, Mul, Div)
+  def operations[F[_]: Expression]: List[(Algebraic[F], Algebraic[F]) => BinaryOperation[F]] =
+    List(Expression[F].add, Expression[F].sub, Expression[F].mul, Expression[F].div)
 
-  private def arbitraryGetBinOperation: (Expression, Expression) => BinaryOperation = operations(
-    randPositiveInt(operations.size) - 1
-  )
+  private def arbitraryGetBinOperation[F[_]: Expression]: (Algebraic[F], Algebraic[F]) => BinaryOperation[F] =
+    operations[F].apply(randPositiveInt(operations.length) - 1)
 
-  def generateSimpleBinOp(): BinaryOperation =
-    DBZSafeBinOperation(arbitraryGetBinOperation, Number(randDouble), Number(randDouble))
+  def generateSimpleBinOp(): BinaryOperation[Verifiers] =
+    DBZSafeBinOperation(
+      arbitraryGetBinOperation,
+      Expression[Verifiers].number(randDouble),
+      Expression[Verifiers].number(randDouble)
+    )
 
-  def generateArbitraryExpression(): Expression = {
+  def generateArbitraryExpression(): Algebraic[Verifiers] = {
     recursiveGenExpression(10)
   }
 
-  def recursiveGenExpression(maxDepth: Int, curDepth: Int = 0): Expression = {
+  def recursiveGenExpression(maxDepth: Int, curDepth: Int = 0): Algebraic[Verifiers] = {
     if (curDepth >= maxDepth) {
-      Number(randDouble)
+      Expression[Verifiers].number(randDouble)
     } else {
       randPositiveInt(3) match {
-        case 1 => Number(randDouble)
+        case 1 => Expression[Verifiers].number(randDouble)
         case 2 =>
-          InBrackets(recursiveGenExpression(maxDepth, curDepth + 1))
+          Expression[Verifiers].inBrackets(recursiveGenExpression(maxDepth, curDepth + 1))
         case _ =>
           DBZSafeBinOperation(
             arbitraryGetBinOperation,
@@ -50,12 +54,15 @@ object Calculator {
   }
 
   private def DBZSafeBinOperation(
-    op: (Expression, Expression) => BinaryOperation,
-    e1: Expression,
-    e2: Expression
-  ): BinaryOperation =
-    op match {
-      case Div => op(e1, (e2.res == 0) ?? (Number(1), e2))
-      case _   => op(e1, e2)
+    op: (Algebraic[Verifiers], Algebraic[Verifiers]) => BinaryOperation[Verifiers],
+    e1: Algebraic[Verifiers],
+    e2: Algebraic[Verifiers]
+  ): BinaryOperation[Verifiers] = {
+    if (e2.res._1 == 0) {
+      val oper = op(e1, Expression[Verifiers].number(1))
+      (oper.opStr == "/") ?? (oper, op(e1, e2))
+    } else {
+      op(e1, e2)
     }
+  }
 }

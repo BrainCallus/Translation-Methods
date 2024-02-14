@@ -14,7 +14,6 @@ import scala.util.Using
 
 case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerator {
   private def IMPORTS: List[String] = List(
-    // todo:
     "grammar.LexerRule",
     "template.AbstractLexer",
     "util.Tree",
@@ -39,9 +38,7 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
       val st = for {
         _ <- writeState(writer, s"case class $className(inputStream: InputStream) {")(_ + 1)
         _ <-
-          writeState(writer, s"val lex: ${grammar.name}Lexer = ${grammar.name}Lexer(inputStream)")(
-            identity
-          ) // .nextToken().asInstanceOf[${grammar.name}Lexer]
+          writeState(writer, s"val lex: ${grammar.name}Lexer = ${grammar.name}Lexer(inputStream)")(identity)
         _ <- writeState(writer, "lex.lexerParams = lex.nextToken()")(identity)
       } yield ()
       val st2 = for {
@@ -49,18 +46,15 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
           .foldLeft(st)((state, rule) =>
             for {
               _ <- state
-              _ <- writeRuleContext(rule)(writer)
-              /*.andThen(s => {    todo:
+              _ <- writeRuleContext(rule).andThen(s => {
                 writer.newLine()
                 s
-              })*/
-              _ <- writeParseRule(rule)(writer)
-              /*
-              .andThen(s => {
-                              writer.newLine()
-                              s
-                            })
-               */
+              })(writer)
+              _ <- writeParseRule(rule).andThen(s => {
+                  writer.newLine()
+                  s
+                })(writer)
+
             } yield ()
           )
           .modify(_ - 1)
@@ -134,7 +128,7 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
         for {
           _ <- writeState(
             writer,
-            s"val ${nt.name} = ${nt.value}(${nt.translatingSymbol.code})" // val ${nt.value} : ${grammar.parserRules.get(nt.name).map(getContextName).getOrElse("")}
+            s"val ${nt.name} = ${nt.value}(${nt.translatingSymbol.code})"
           )(identity)
           _ <- writeState(writer, s"ctx = ctx.appendLastChild(${nt.name})")(identity)
         } yield ()

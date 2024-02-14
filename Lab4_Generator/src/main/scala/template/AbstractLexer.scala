@@ -22,7 +22,6 @@ abstract class AbstractLexer[T <: Token](
 
   val lexerRules: List[LexerRule[T]]
   def getTokenWithName(name: String): T
-  //protected def moveNext(is: InputStream, newParams: LexerParams): Any
 
   def curPos(): Int = lexerParams.curPos
 
