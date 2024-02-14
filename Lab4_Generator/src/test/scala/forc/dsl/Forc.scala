@@ -1,9 +1,9 @@
 package forc.dsl
 
-import util.RandomUtil.{generateVarName, randInt, unbiasedCoin}
+import common.RandomUtil.{generateVarName, randInt, unbiasedCoin}
 import util.Ternary.Ternary
-import util.TestSample
-import util.TestSample._
+import common.TestSample
+import common.TestSample._
 
 case class Forc(varType: VarType, varName: String, startIdx: BigInt, endIdx: BigInt, cmp: ComparatorSign, inc: Boolean)
   extends TestSample {

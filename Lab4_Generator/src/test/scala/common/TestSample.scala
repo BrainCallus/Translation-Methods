@@ -1,10 +1,10 @@
-package util
+package common
 
 import enumeratum._
 
 import util.CommonUtils.{foldl, treeToStringList}
 import util.GrammarTree.ContextTree
-import util.RandomUtil.randPositiveInt
+import common.RandomUtil.randPositiveInt
 
 trait TestSample {
   def res: String

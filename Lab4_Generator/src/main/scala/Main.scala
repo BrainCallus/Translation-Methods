@@ -1,5 +1,7 @@
 import antlr.{LexerGrammar, ParserGrammar}
+import calculator.CalculatorParser
 import forc.ForcParser
+import forc.ForcParser.ForcContext
 import generator.{LexerGenerator, ParserGenerator, TokenGenerator}
 import grammar.entry.{Attribute, GrammarEntry, NonTerminal, TranslatingSymbol}
 import grammar.{Grammar, LexerRule, ParserRule, Token}
@@ -32,24 +34,25 @@ object Main {
    // }
     generateAndRunCalc()
 
+
   }
 
   private def generateAndRunFor(): Unit = {
     generateFiles(forPath)
     val forcParser = ForcParser(new ByteArrayInputStream(("for(long for1i=1000; for1i<= -10;for1i--)").getBytes()))
-    val res = forcParser.forc()
+    val res: ForcContext = forcParser.forc()
     makeGraph(res.res, "graphviz\\forc\\graphFor.dot")
   }
 
   private def generateAndRunCalc(): Unit = {
     generateFiles(calcPath)
-    //val calculatorParser = new CalculatorParser(new ByteArrayInputStream(("((" +
-    //  "1 + (2" +
-    //  "))) *" +
-    //  " ((10)) /" +
-    //  " ((2)) + (    1)").getBytes()))
-    //val res = calculatorParser.calculator()
-    //println(res.res)
+    val calculatorParser = new CalculatorParser(new ByteArrayInputStream(("((" +
+      "1 + (2" +
+      "))) *" +
+      " ((10)) /" +
+      " ((2)) + (    1)").getBytes()))
+    val res = calculatorParser.calculator()
+    println(res.res)
   }
 
   private def generateFiles(path: String): Unit = {

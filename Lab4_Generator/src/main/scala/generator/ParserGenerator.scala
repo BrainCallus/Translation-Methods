@@ -34,7 +34,7 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
     createFile(file, className)
     Using(Files.newBufferedWriter(file, StandardCharsets.UTF_8)) { writer =>
       writeHeaders(writer)
-      writeImports(writer, IMPORTS)
+      writeImports(writer, s"$className._" :: IMPORTS)
       val st = for {
         _ <- writeState(writer, s"case class $className(inputStream: InputStream) {")(_ + 1)
         _ <-
@@ -46,23 +46,38 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
           .foldLeft(st)((state, rule) =>
             for {
               _ <- state
-              _ <- writeRuleContext(rule).andThen(s => {
+              _ <- writeParseRule(rule).andThen(s => {
                 writer.newLine()
                 s
               })(writer)
-              _ <- writeParseRule(rule).andThen(s => {
-                  writer.newLine()
-                  s
-                })(writer)
-
             } yield ()
           )
           .modify(_ - 1)
-        _ <- writeState(writer, "}")(identity)
+        _ <- writeState(writer, "}\n")(identity)
+        _ <- writeParserCompanion(grammar.parserRules.values.toList)(writer)
       } yield ()
       st2.runA(0).value
 
     }
+  }
+
+  private def writeParserCompanion(rules: List[ParserRule]): StateWithWriter = { implicit writer: BufferedWriter =>
+    for {
+      _ <- rules
+        .foldLeft(writeState(writer, s"object $getParserName {")(_ + 1))((state, rule) =>
+          for {
+            _ <- state
+            _ <- writeRuleContext(rule).andThen(s => {
+              writer.newLine()
+              s
+            })(writer)
+          } yield ()
+        )
+        .modify(_ - 1)
+      _ <- writeState(writer, "}")(identity)
+
+    } yield ()
+
   }
 
   private def writeParseRule(rule: ParserRule): StateWithWriter = { implicit writer: BufferedWriter =>

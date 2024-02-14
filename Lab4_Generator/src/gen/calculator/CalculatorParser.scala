@@ -1,6 +1,7 @@
 
 package calculator;
 
+import CalculatorParser._;
 import grammar.LexerRule;
 import template.AbstractLexer;
 import util.Tree;
@@ -13,11 +14,7 @@ import template.Tokenized._;
 case class CalculatorParser(inputStream: InputStream) {
 	val lex: CalculatorLexer = CalculatorLexer(inputStream)
 	lex.lexerParams = lex.nextToken()
-	case class CalculatorContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
-		var res: Double = 0
-		override def pushFirstChild(child: GrammarTree[_]) = CalculatorContext(ctxRoot, child::ctxChildren)
-		override def appendLastChild(child: GrammarTree[_]) = CalculatorContext(ctxRoot, ctxChildren ++ List(child))
-	 }
+
 	def calculator() : CalculatorContext = {
 		var ctx = CalculatorContext("calculator")
 		if(lex.curTokenIn(Set(CalculatorToken.LPAREN, CalculatorToken.NUMBER))) {
@@ -36,11 +33,7 @@ case class CalculatorParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
-	case class TermContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
-		var res: Double = 0
-		override def pushFirstChild(child: GrammarTree[_]) = TermContext(ctxRoot, child::ctxChildren)
-		override def appendLastChild(child: GrammarTree[_]) = TermContext(ctxRoot, ctxChildren ++ List(child))
-	 }
+
 	def term() : TermContext = {
 		var ctx = TermContext("term")
 		if(lex.curTokenIn(Set(CalculatorToken.LPAREN, CalculatorToken.NUMBER))) {
@@ -55,11 +48,7 @@ case class CalculatorParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
-	case class MuldivContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
-		var res: Double = 0
-		override def pushFirstChild(child: GrammarTree[_]) = MuldivContext(ctxRoot, child::ctxChildren)
-		override def appendLastChild(child: GrammarTree[_]) = MuldivContext(ctxRoot, ctxChildren ++ List(child))
-	 }
+
 	def muldiv(in : Double) : MuldivContext = {
 		var ctx = MuldivContext("muldiv")
 		if(lex.curTokenIn(Set(CalculatorToken.MUL))) {
@@ -98,11 +87,7 @@ case class CalculatorParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
-	case class ExprContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
-		var res: Double = 0
-		override def pushFirstChild(child: GrammarTree[_]) = ExprContext(ctxRoot, child::ctxChildren)
-		override def appendLastChild(child: GrammarTree[_]) = ExprContext(ctxRoot, ctxChildren ++ List(child))
-	 }
+
 	def expr() : ExprContext = {
 		var ctx = ExprContext("expr")
 		if(lex.curTokenIn(Set(CalculatorToken.LPAREN, CalculatorToken.NUMBER))) {
@@ -119,11 +104,7 @@ case class CalculatorParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
-	case class AddsubContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
-		var res: Double = 0
-		override def pushFirstChild(child: GrammarTree[_]) = AddsubContext(ctxRoot, child::ctxChildren)
-		override def appendLastChild(child: GrammarTree[_]) = AddsubContext(ctxRoot, ctxChildren ++ List(child))
-	 }
+
 	def addsub(in : Double) : AddsubContext = {
 		var ctx = AddsubContext("addsub")
 		if(lex.curTokenIn(Set(CalculatorToken.ADD))) {
@@ -162,11 +143,7 @@ case class CalculatorParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
-	case class AtomContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
-		var res: Double = 0
-		override def pushFirstChild(child: GrammarTree[_]) = AtomContext(ctxRoot, child::ctxChildren)
-		override def appendLastChild(child: GrammarTree[_]) = AtomContext(ctxRoot, ctxChildren ++ List(child))
-	 }
+
 	def atom() : AtomContext = {
 		var ctx = AtomContext("atom")
 		if(lex.curTokenIn(Set(CalculatorToken.LPAREN))) {
@@ -201,4 +178,43 @@ case class CalculatorParser(inputStream: InputStream) {
 			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
 		}
 	}
+}
+
+object CalculatorParser {
+
+	case class CalculatorContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
+		var res: Double = 0
+		override def pushFirstChild(child: GrammarTree[_]) = CalculatorContext(ctxRoot, child::ctxChildren)
+		override def appendLastChild(child: GrammarTree[_]) = CalculatorContext(ctxRoot, ctxChildren ++ List(child))
+	 }
+
+	case class TermContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
+		var res: Double = 0
+		override def pushFirstChild(child: GrammarTree[_]) = TermContext(ctxRoot, child::ctxChildren)
+		override def appendLastChild(child: GrammarTree[_]) = TermContext(ctxRoot, ctxChildren ++ List(child))
+	 }
+
+	case class MuldivContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
+		var res: Double = 0
+		override def pushFirstChild(child: GrammarTree[_]) = MuldivContext(ctxRoot, child::ctxChildren)
+		override def appendLastChild(child: GrammarTree[_]) = MuldivContext(ctxRoot, ctxChildren ++ List(child))
+	 }
+
+	case class ExprContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
+		var res: Double = 0
+		override def pushFirstChild(child: GrammarTree[_]) = ExprContext(ctxRoot, child::ctxChildren)
+		override def appendLastChild(child: GrammarTree[_]) = ExprContext(ctxRoot, ctxChildren ++ List(child))
+	 }
+
+	case class AddsubContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
+		var res: Double = 0
+		override def pushFirstChild(child: GrammarTree[_]) = AddsubContext(ctxRoot, child::ctxChildren)
+		override def appendLastChild(child: GrammarTree[_]) = AddsubContext(ctxRoot, ctxChildren ++ List(child))
+	 }
+
+	case class AtomContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
+		var res: Double = 0
+		override def pushFirstChild(child: GrammarTree[_]) = AtomContext(ctxRoot, child::ctxChildren)
+		override def appendLastChild(child: GrammarTree[_]) = AtomContext(ctxRoot, ctxChildren ++ List(child))
+	 }
 }

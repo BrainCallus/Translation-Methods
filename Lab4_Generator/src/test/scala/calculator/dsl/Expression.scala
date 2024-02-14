@@ -1,7 +1,7 @@
 package calculator.dsl
 
 import calculator.dsl.Algebraic._
-import util.Ternary.Ternary
+import common.RandomUtil.{randDouble, randPositiveInt}
 
 trait Expression[F[_]] {
   import Algebraic._
@@ -15,75 +15,33 @@ trait Expression[F[_]] {
 
 object Expression {
   def apply[F[_]](implicit exprBuild: Expression[F]): Expression[F] = exprBuild
-  type Id[A] = A
-  type Verifiers[_] = (Double, List[String])
 
-  implicit val calculate: Expression[Id] = new Expression[Id] {
-    override def number(double: Double): Algebraic.Number[Id] = new Number[Id]() {
-      override def res: Id[Double] = double
-    }
+  def operations[F[_]: Expression]: List[(Algebraic[F], Algebraic[F]) => BinaryOperation[F]] =
+    List(Expression[F].add, Expression[F].sub, Expression[F].mul, Expression[F].div)
 
-    override def inBrackets(e: Algebraic[Id]): Algebraic.InBrackets[Id] = new InBrackets[Id](e) {}
+  private def arbitraryGetBinOperation[F[_]: Expression]: (Algebraic[F], Algebraic[F]) => BinaryOperation[F] =
+    operations[F].apply(randPositiveInt(operations.length) - 1)
 
-    override def add(e1: Algebraic[Id], e2: Algebraic[Id]): Algebraic.Add[Id] = new Add[Id](e1, e2) {
-      override def res: Id[Double] = e1.res + e2.res
-    }
+  def generateSimpleBinOp[F[_]: Expression](): BinaryOperation[F] =
+    arbitraryGetBinOperation.apply(Expression[F].number(randDouble), Expression[F].number(randDouble))
 
-    override def sub(e1: Algebraic[Id], e2: Algebraic[Id]): Sub[Id] = new Sub[Id](e1, e2) {
-      override def res: Id[Double] = e1.res - e2.res
-    }
-
-    override def mul(e1: Algebraic[Id], e2: Algebraic[Id]): Mul[Id] = new Mul[Id](e1, e2) {
-      override def res: Id[Double] = e1.res * e2.res
-    }
-
-    override def div(e1: Algebraic[Id], e2: Algebraic[Id]): Div[Id] = new Div[Id](e1, e2) {
-      override def res: Id[Double] = e1.res / e2.res
-    }
+  def generateArbitraryExpression[F[_]: Expression](): Algebraic[F] = {
+    recursiveGenExpression[F](10)
   }
 
-  implicit val verifiers: Expression[Verifiers] = new Expression[Verifiers] {
-    override def number(double: Double): Number[Verifiers] = new Number[Verifiers]() {
-      override def res: Verifiers[Double] = (double, List(double.toString))
-    }
-
-    override def inBrackets(e: Algebraic[Verifiers]): InBrackets[Verifiers] = new InBrackets[Verifiers](e) {
-      override def res: Verifiers[Double] = (e.res._1, List("(") ++ e.res._2 ++ List(")"))
-    }
-
-    override def add(e1: Algebraic[Verifiers], e2: Algebraic[Verifiers]): Add[Verifiers] = new Add[Verifiers](e1, e2) {
-      override def res: Verifiers[Double] = binOpToList(this, _ + _)
-    }
-
-    override def sub(e1: Algebraic[Verifiers], e2: Algebraic[Verifiers]): Sub[Verifiers] = new Sub[Verifiers](e1, e2) {
-      override def res: Verifiers[Double] = binOpToList(this, _ - _)
-    }
-
-    override def mul(e1: Algebraic[Verifiers], e2: Algebraic[Verifiers]): Mul[Verifiers] = new Mul[Verifiers](e1, e2) {
-      override def res: Verifiers[Double] = binOpToList(this, _ * _)
-    }
-
-    override def div(e1: Algebraic[Verifiers], e2: Algebraic[Verifiers]): Div[Verifiers] = new Div[Verifiers](e1, e2) {
-      override def res: Verifiers[Double] = binOpToList(this, _ / _)
-    }
-
-    private def binOpToList(b: BinaryOperation[Verifiers], op: (Double, Double) => Double): (Double, List[String]) = {
-      (
-        op(b.expression1.res._1, b.expression2.res._1),
-        leftOperandTokens(b)(b.expression1) ++ List(b.opStr) ++ rightOperandTokens(b)(b.expression2)
-      )
-    }
-    private def leftOperandTokens(e: BinaryOperation[Verifiers]): Algebraic[Verifiers] => List[String] = operandTokens(
-      e.infixl
-    )
-    private def rightOperandTokens(e: BinaryOperation[Verifiers]): Algebraic[Verifiers] => List[String] = operandTokens(
-      e.infixr
-    )
-
-    private def operandTokens(infixValue: Int)(operand: Algebraic[Verifiers]): List[String] = {
-      operand match {
-        case b: BinaryOperation[Verifiers] => (b.infix < infixValue) ?? ("(" :: b.res._2 ++ List(")"), b.res._2)
-        case _                             => operand.res._2
+  def recursiveGenExpression[F[_]: Expression](maxDepth: Int, curDepth: Int = 0): Algebraic[F] = {
+    if (curDepth >= maxDepth) {
+      Expression[F].number(randDouble)
+    } else {
+      randPositiveInt(3) match {
+        case 1 => Expression[F].number(randDouble)
+        case 2 =>
+          Expression[F].inBrackets(recursiveGenExpression(maxDepth, curDepth + 1))
+        case _ =>
+          arbitraryGetBinOperation[F].apply(
+            recursiveGenExpression[F](maxDepth, curDepth + 1),
+            recursiveGenExpression[F](maxDepth, curDepth + 1)
+          )
       }
     }
   }
