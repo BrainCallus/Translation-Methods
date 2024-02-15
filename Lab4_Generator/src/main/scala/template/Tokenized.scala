@@ -3,7 +3,7 @@ package template
 import grammar.Token
 
 sealed trait Tokenized {
-  def text:String
+  def text: String
 }
 
 object Tokenized {
@@ -17,5 +17,3 @@ object Tokenized {
     def tokenLen: Int = text.length
   }
 }
-
-

@@ -10,6 +10,7 @@ object CommonUtils {
     asScala(list.iterator()).toList
   }
 
+  // for tests mainly
   def treeToStringList(tree: GrammarTree[_]): List[String] = internalTreeToStringList(List.empty[String])(tree)
 
   private def internalTreeToStringList(acc: List[String])(tree: GrammarTree[_]): List[String] =
@@ -28,17 +29,17 @@ object CommonUtils {
     func: (E, T) => E
   )(list: List[T]): E =
     list match {
-      case Nil => accum
+      case Nil          => accum
       case head :: tail => doFoldl(func(accum, head))(func)(tail)
     }
 
   def getDefaultValueByTypeAsString(typeName: String): String = {
     typeName match {
       case "Double" | "Int" | "Long" | "`Short`" | "Float" | "Byte" => "0"
-      case "Char" => "''"
-      case "Boolean" => "false"
-      case "Unit" => "()"
-      case _ => "null"
+      case "Char"                                                   => "'\u0000'"
+      case "Boolean"                                                => "false"
+      case "Unit"                                                   => "()"
+      case _                                                        => "null"
     }
   }
 }

@@ -1,16 +1,14 @@
 package util
 
-import cats.Show
 import cats.data.State
 import template.Tokenized.TokenizedValue
 import util.CommonUtils.{convertList, foldl}
 import util.GrammarTree.TerminalTree
-import util.Ternary.Ternary
 
 import java.io.{BufferedWriter, File, FileWriter}
 import java.nio.file.{Files, Path}
 import scala.sys.process.Process
-import scala.util.{Success, Try}
+import scala.util.Try
 
 object WriteUtil {
 
@@ -37,10 +35,14 @@ object WriteUtil {
   private def toDotFileString(tree: Tree[_]): String =
     internalWriteTreeDot(new StringBuilder("digraph G {\n"), tree)(0, -1)._2.append("}\n").toString()
 
-  private def internalWriteTreeDot(stringBuilder: StringBuilder, tree: Tree[_])(idx: Int, pIdx: Int): (Int, StringBuilder) = {
+  private def internalWriteTreeDot(
+    stringBuilder: StringBuilder,
+    tree: Tree[_]
+  )(idx: Int, pIdx: Int): (Int, StringBuilder) = {
 
-    val nextBuilder: StringBuilder = stringBuilder.append(s"$idx [label = \"${getDotLabelFromTree(tree)}\"]\n")
-      .append(if(pIdx== -1) "" else s"$pIdx -> $idx\n")
+    val nextBuilder: StringBuilder = stringBuilder
+      .append(s"$idx [label = \"${getDotLabelFromTree(tree)}\"]\n")
+      .append(if (pIdx == -1) "" else s"$pIdx -> $idx\n")
     tree.children.foldLeft((idx, nextBuilder))((acc: (Int, StringBuilder), child: Tree[_]) => {
       internalWriteTreeDot(acc._2, child)(acc._1 + 1, idx)
     })
@@ -49,7 +51,7 @@ object WriteUtil {
   private def getDotLabelFromTree(tree: Tree[_]): String = {
     tree match {
       case TerminalTree(tokenized) => s"[${tokenized.asInstanceOf[TokenizedValue[_]].token}, ${tokenized.text}]"
-      case _ => tree.showRoot
+      case _                       => tree.showRoot
     }
   }
 
@@ -57,8 +59,8 @@ object WriteUtil {
     State(offset =>
       (
         modify(offset), {
-        writeLine(writer, line, offset)
-      }
+          writeLine(writer, line, offset)
+        }
       )
     )
 
@@ -70,7 +72,5 @@ object WriteUtil {
 
   private def writeOffset(writer: BufferedWriter, level: Int): Unit =
     writer.write("\t".repeat(level))
-
-
 
 }

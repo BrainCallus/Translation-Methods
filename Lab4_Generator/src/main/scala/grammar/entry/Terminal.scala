@@ -1,3 +1,3 @@
 package grammar.entry
 
-case class Terminal (name: String, value: String) extends GrammarEntry
+case class Terminal(name: String, value: String) extends GrammarEntry

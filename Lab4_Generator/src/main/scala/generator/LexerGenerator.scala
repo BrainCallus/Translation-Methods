@@ -34,7 +34,7 @@ case class LexerGenerator(grammar: Grammar[? <: Token]) extends AbstractGenerato
             s"  extends AbstractLexer[$getEnumName](inputStream) {"
         )(x => x + 1)
         _ <- writeState(writer, s"override val lexerRules = List($getLexerRulesAsString)")(identity)
-        _ <- writeTokenWithName(writer).modify(_ -1)
+        _ <- writeTokenWithName(writer).modify(_ - 1)
         _ <- writeState(writer, "}")(identity)
       } yield ()
       state.runA(0).value

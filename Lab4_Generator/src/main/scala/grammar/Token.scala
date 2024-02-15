@@ -5,7 +5,7 @@ import enumeratum._
 import java.util.regex.Pattern
 import scala.annotation.unused
 
-trait Token extends EnumEntry {self=>
+trait Token extends EnumEntry { self =>
   protected def pattern: String
   @unused
   def getPattern: Pattern = Pattern.compile(pattern)
@@ -14,5 +14,4 @@ trait Token extends EnumEntry {self=>
     val name = self.getClass.getSimpleName
     name.substring(0, name.length - 1)
   }
-
 }
