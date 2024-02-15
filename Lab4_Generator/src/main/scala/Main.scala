@@ -32,12 +32,13 @@ object Main {
 
     // }
     generateAndRunCalc()
+    generateAndRunFor()
 
   }
 
   private def generateAndRunFor(): Unit = {
     generateFiles(forPath)
-    val forcParser = ForcParser(new ByteArrayInputStream(("for(long for1i=1000; for1i<= -10;for1i--)").getBytes()))
+    val forcParser = ForcParser(new ByteArrayInputStream(("for     (long vArfor1i=1000   ; vArfor1i<=    -10;vArfor1i-- )").getBytes()))
     val res: ForcContext = forcParser.forc()
     makeGraph(res.res, "graphviz\\forc\\graphFor.dot")
   }
@@ -46,11 +47,7 @@ object Main {
     generateFiles(calcPath)
     val calculatorParser = new CalculatorParser(
       new ByteArrayInputStream(
-        ("((" +
-          "1 + (2" +
-          "))) *" +
-          " ((10)) /" +
-          " ((2)) + (    1)").getBytes()
+        ("  3* 10-          3+(1 - 1) * 2 +4/(1/2)").getBytes() // 35
       )
     )
     val res = calculatorParser.calculator()

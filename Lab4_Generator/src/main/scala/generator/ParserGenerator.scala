@@ -25,8 +25,6 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
   )
   // todo: writer.newLine()
 
-  // TODO: more clear; structurize || to different files
-  // todo: AbstractGenerator::writeState -> WriteUtil[to_create]
 
   override def generateFile(path: Path): Unit = {
     val className = getParserName
@@ -198,7 +196,6 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
       } yield ()
   }
 
-  // todo: get*..*Name -> AbstractGenerator
   private def getParserName = grammar.name + "Parser"
 
   private def getEnumValue(value: String) =
