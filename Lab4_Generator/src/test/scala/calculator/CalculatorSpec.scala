@@ -50,6 +50,10 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
     validSeries(buildCalc(ExprVerify.inBrackets(ExprVerify.number(randDouble))), "NumberBrackets")
   }
 
+  it should "parse and calculate unary minus operation" in {
+    validSeries(buildCalc(ExprVerify.unoMinus(generateArbitraryExpression[Verifiers]())), "UnaryMinus")
+  }
+
   it should "parse and calculate simple binary operations" in {
     validSeries(buildCalc(generateSimpleBinOp[Verifiers]()), "Op")
   }
@@ -80,9 +84,11 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
   }
 
   it should "throw ParseException if at least one operand missed" in {
-    List("+", "-", "*", "/").foreach(op => {
+    List("+", "-", "*").foreach(op => {
       invalidSeries(buildCalc(generateArbitraryExpression[Verifiers]()), c => c.generateStringSample + op)
-      invalidSeries(buildCalc(generateArbitraryExpression[Verifiers]()), c => op + c.generateStringSample)
+      if (op != "-") {
+        invalidSeries(buildCalc(generateArbitraryExpression[Verifiers]()), c => op + c.generateStringSample)
+      }
     })
   }
 

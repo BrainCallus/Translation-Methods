@@ -7,15 +7,18 @@ object ExpressionModules {
   type Id[A] = A
   type Verifiers[_] = (Double, List[String])
 
-  /**
-   * Simplest usage as a just calculator
-   */
+  /** Simplest usage as a just calculator
+    */
   implicit val calculate: Expression[Id] = new Expression[Id] {
     override def number(double: Double): Algebraic.Number[Id] = new Number[Id]() {
       override def res: Id[Double] = double
     }
 
     override def inBrackets(e: Algebraic[Id]): Algebraic.InBrackets[Id] = new InBrackets[Id](e) {}
+
+    override def unoMinus(e: Algebraic[Id]): UnoMinus[Id] = new UnoMinus[Id] {
+      override def res: Id[Double] = -e.res
+    }
 
     override def add(e1: Algebraic[Id], e2: Algebraic[Id]): Algebraic.Add[Id] = new Add[Id](e1, e2) {
       override def res: Id[Double] = e1.res + e2.res
@@ -32,6 +35,10 @@ object ExpressionModules {
     override def div(e1: Algebraic[Id], e2: Algebraic[Id]): Div[Id] = new Div[Id](e1, e2) {
       override def res: Id[Double] = e1.res / e2.res
     }
+
+    override def log(e1: Algebraic[Id], e2: Algebraic[Id]): Log[Id] = new Log[Id](e1, e2) {
+      override def res: Id[Double] = math.pow(e1.res, e2.res)
+    }
   }
 
   implicit val verifiers: Expression[Verifiers] = new Expression[Verifiers] {
@@ -41,6 +48,10 @@ object ExpressionModules {
 
     override def inBrackets(e: Algebraic[Verifiers]): InBrackets[Verifiers] = new InBrackets[Verifiers](e) {
       override def res: Verifiers[Double] = (e.res._1, List("(") ++ e.res._2 ++ List(")"))
+    }
+
+    override def unoMinus(e: Algebraic[Verifiers]): UnoMinus[Verifiers] = new UnoMinus[Verifiers]() {
+      override def res: Verifiers[Double] = (-e.res._1, List("-", "(") ++ e.res._2 ++ List(")"))
     }
 
     override def add(e1: Algebraic[Verifiers], e2: Algebraic[Verifiers]): Add[Verifiers] = new Add[Verifiers](e1, e2) {
@@ -57,6 +68,10 @@ object ExpressionModules {
 
     override def div(e1: Algebraic[Verifiers], e2: Algebraic[Verifiers]): Div[Verifiers] = new Div[Verifiers](e1, e2) {
       override def res: Verifiers[Double] = binOpToList(this, _ / _)
+    }
+
+    override def log(e1: Algebraic[Verifiers], e2: Algebraic[Verifiers]): Log[Verifiers] = new Log[Verifiers](e1, e2) {
+      override def res: Verifiers[Double] = binOpToList(this, (x, y) => math.log10(x) / math.log10(y))
     }
 
     private def binOpToList(b: BinaryOperation[Verifiers], op: (Double, Double) => Double): (Double, List[String]) = {
@@ -81,5 +96,4 @@ object ExpressionModules {
       }
     }
   }
-
 }

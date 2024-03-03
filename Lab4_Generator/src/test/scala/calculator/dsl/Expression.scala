@@ -7,17 +7,19 @@ trait Expression[F[_]] {
   import Algebraic._
   def number(double: Double): Number[F]
   def inBrackets(e: Algebraic[F]): InBrackets[F]
+  def unoMinus(e: Algebraic[F]): UnoMinus[F]
   def add(e1: Algebraic[F], e2: Algebraic[F]): Add[F]
   def sub(e1: Algebraic[F], e2: Algebraic[F]): Sub[F]
   def mul(e1: Algebraic[F], e2: Algebraic[F]): Mul[F]
   def div(e1: Algebraic[F], e2: Algebraic[F]): Div[F]
+  def log(e1: Algebraic[F], e2: Algebraic[F]): Log[F]
 }
 
 object Expression {
   def apply[F[_]](implicit exprBuild: Expression[F]): Expression[F] = exprBuild
 
   def operations[F[_]: Expression]: List[(Algebraic[F], Algebraic[F]) => BinaryOperation[F]] =
-    List(Expression[F].add, Expression[F].sub, Expression[F].mul, Expression[F].div)
+    List(Expression[F].add, Expression[F].sub, Expression[F].mul, Expression[F].div, Expression[F].log)
 
   private def arbitraryGetBinOperation[F[_]: Expression]: (Algebraic[F], Algebraic[F]) => BinaryOperation[F] =
     operations[F].apply(randPositiveInt(operations.length) - 1)
@@ -33,10 +35,11 @@ object Expression {
     if (curDepth >= maxDepth) {
       Expression[F].number(randDouble)
     } else {
-      randPositiveInt(3) match {
+      randPositiveInt(4) match {
         case 1 => Expression[F].number(randDouble)
         case 2 =>
           Expression[F].inBrackets(recursiveGenExpression(maxDepth, curDepth + 1))
+        case 3 => Expression[F].unoMinus(recursiveGenExpression(maxDepth, curDepth + 1))
         case _ =>
           arbitraryGetBinOperation[F].apply(
             recursiveGenExpression[F](maxDepth, curDepth + 1),

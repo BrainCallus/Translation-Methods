@@ -17,7 +17,7 @@ case class CalculatorParser(inputStream: InputStream) {
 
 	def calculator() : CalculatorContext = {
 		var ctx = CalculatorContext("calculator")
-		if(lex.curTokenIn(Set(CalculatorToken.LPAREN, CalculatorToken.NUMBER))) {
+		if(lex.curTokenIn(Set(CalculatorToken.SUB, CalculatorToken.LPAREN, CalculatorToken.NUMBER))) {
 			val e = expr()
 			ctx = ctx.appendLastChild(e)
 			if(!lex.compareToken(CalculatorToken.EOF)) {
@@ -36,10 +36,10 @@ case class CalculatorParser(inputStream: InputStream) {
 
 	def term() : TermContext = {
 		var ctx = TermContext("term")
-		if(lex.curTokenIn(Set(CalculatorToken.LPAREN, CalculatorToken.NUMBER))) {
-			val a = atom()
-			ctx = ctx.appendLastChild(a)
-			val m = muldiv(a.res)
+		if(lex.curTokenIn(Set(CalculatorToken.SUB, CalculatorToken.LPAREN, CalculatorToken.NUMBER))) {
+			val h = highPrior()
+			ctx = ctx.appendLastChild(h)
+			val m = muldiv(h.res)
 			ctx = ctx.appendLastChild(m)
 			ctx.res = m.res;
 			ctx
@@ -58,9 +58,9 @@ case class CalculatorParser(inputStream: InputStream) {
 			ctx = ctx.appendLastChild(TerminalTree(lex.curToken()))
 			val m = lex.curToken()
 			lex.nextToken()
-			val a = atom()
-			ctx = ctx.appendLastChild(a)
-			val mm = muldiv(in * a.res)
+			val h = highPrior()
+			ctx = ctx.appendLastChild(h)
+			val mm = muldiv(in * h.res)
 			ctx = ctx.appendLastChild(mm)
 			ctx.res = mm.res;
 			ctx
@@ -72,9 +72,9 @@ case class CalculatorParser(inputStream: InputStream) {
 			ctx = ctx.appendLastChild(TerminalTree(lex.curToken()))
 			val d = lex.curToken()
 			lex.nextToken()
-			val a = atom()
-			ctx = ctx.appendLastChild(a)
-			val mm = muldiv(in / a.res)
+			val h = highPrior()
+			ctx = ctx.appendLastChild(h)
+			val mm = muldiv(in / h.res)
 			ctx = ctx.appendLastChild(mm)
 			ctx.res = mm.res;
 			ctx
@@ -90,14 +90,54 @@ case class CalculatorParser(inputStream: InputStream) {
 
 	def expr() : ExprContext = {
 		var ctx = ExprContext("expr")
-		if(lex.curTokenIn(Set(CalculatorToken.LPAREN, CalculatorToken.NUMBER))) {
-			val a = atom()
-			ctx = ctx.appendLastChild(a)
-			val m = muldiv(a.res)
+		if(lex.curTokenIn(Set(CalculatorToken.SUB, CalculatorToken.LPAREN, CalculatorToken.NUMBER))) {
+			val h = highPrior()
+			ctx = ctx.appendLastChild(h)
+			val m = muldiv(h.res)
 			ctx = ctx.appendLastChild(m)
 			val as = addsub(m.res)
 			ctx = ctx.appendLastChild(as)
 			ctx.res = as.res;
+			ctx
+		}
+		else {
+			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
+		}
+	}
+
+	def highPrior() : HighPriorContext = {
+		var ctx = HighPriorContext("highPrior")
+		if(lex.curTokenIn(Set(CalculatorToken.SUB, CalculatorToken.LPAREN, CalculatorToken.NUMBER))) {
+			val a = atom()
+			ctx = ctx.appendLastChild(a)
+			val e = log(a.res)
+			ctx = ctx.appendLastChild(e)
+			ctx.res = e.res
+			ctx
+		}
+		else {
+			throw new ParseException("Unexpected token: " + lex.curToken().text, lex.curPos())
+		}
+	}
+
+	def log(in : Double) : LogContext = {
+		var ctx = LogContext("log")
+		if(lex.curTokenIn(Set(CalculatorToken.LOG))) {
+			if(!lex.compareToken(CalculatorToken.LOG)) {
+				throw new ParseException("Expected LOG, found:" + lex.curToken().text, lex.curPos())
+			}
+			ctx = ctx.appendLastChild(TerminalTree(lex.curToken()))
+			val l = lex.curToken()
+			lex.nextToken()
+			val a = atom()
+			ctx = ctx.appendLastChild(a)
+			val e = log(a.res)
+			ctx = ctx.appendLastChild(e)
+			ctx.res = math.log10(in) / math.log10(e.res);
+			ctx
+		}
+		else if(lex.curTokenIn(Set(CalculatorToken.EOF, CalculatorToken.RPAREN, CalculatorToken.SUB, CalculatorToken.ADD, CalculatorToken.DIV, CalculatorToken.MUL))) {
+			ctx.res = in;
 			ctx
 		}
 		else {
@@ -146,12 +186,18 @@ case class CalculatorParser(inputStream: InputStream) {
 
 	def atom() : AtomContext = {
 		var ctx = AtomContext("atom")
-		if(lex.curTokenIn(Set(CalculatorToken.LPAREN))) {
+		if(lex.curTokenIn(Set(CalculatorToken.SUB))) {
+			if(!lex.compareToken(CalculatorToken.SUB)) {
+				throw new ParseException("Expected SUB, found:" + lex.curToken().text, lex.curPos())
+			}
+			ctx = ctx.appendLastChild(TerminalTree(lex.curToken()))
+			val s = lex.curToken()
+			lex.nextToken()
 			if(!lex.compareToken(CalculatorToken.LPAREN)) {
 				throw new ParseException("Expected LPAREN, found:" + lex.curToken().text, lex.curPos())
 			}
 			ctx = ctx.appendLastChild(TerminalTree(lex.curToken()))
-			val o = lex.curToken()
+			val l = lex.curToken()
 			lex.nextToken()
 			val e = expr()
 			ctx = ctx.appendLastChild(e)
@@ -159,7 +205,25 @@ case class CalculatorParser(inputStream: InputStream) {
 				throw new ParseException("Expected RPAREN, found:" + lex.curToken().text, lex.curPos())
 			}
 			ctx = ctx.appendLastChild(TerminalTree(lex.curToken()))
-			val c = lex.curToken()
+			val r = lex.curToken()
+			lex.nextToken()
+			ctx.res = -e.res;
+			ctx
+		}
+		else if(lex.curTokenIn(Set(CalculatorToken.LPAREN))) {
+			if(!lex.compareToken(CalculatorToken.LPAREN)) {
+				throw new ParseException("Expected LPAREN, found:" + lex.curToken().text, lex.curPos())
+			}
+			ctx = ctx.appendLastChild(TerminalTree(lex.curToken()))
+			val l = lex.curToken()
+			lex.nextToken()
+			val e = expr()
+			ctx = ctx.appendLastChild(e)
+			if(!lex.compareToken(CalculatorToken.RPAREN)) {
+				throw new ParseException("Expected RPAREN, found:" + lex.curToken().text, lex.curPos())
+			}
+			ctx = ctx.appendLastChild(TerminalTree(lex.curToken()))
+			val r = lex.curToken()
 			lex.nextToken()
 			ctx.res = e.res;
 			ctx
@@ -204,6 +268,18 @@ object CalculatorParser {
 		var res: Double = 0
 		override def pushFirstChild(child: GrammarTree[_]) = ExprContext(ctxRoot, child::ctxChildren)
 		override def appendLastChild(child: GrammarTree[_]) = ExprContext(ctxRoot, ctxChildren ++ List(child))
+	 }
+
+	case class HighPriorContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
+		var res: Double = 0
+		override def pushFirstChild(child: GrammarTree[_]) = HighPriorContext(ctxRoot, child::ctxChildren)
+		override def appendLastChild(child: GrammarTree[_]) = HighPriorContext(ctxRoot, ctxChildren ++ List(child))
+	 }
+
+	case class LogContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {
+		var res: Double = 0
+		override def pushFirstChild(child: GrammarTree[_]) = LogContext(ctxRoot, child::ctxChildren)
+		override def appendLastChild(child: GrammarTree[_]) = LogContext(ctxRoot, ctxChildren ++ List(child))
 	 }
 
 	case class AddsubContext(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty) extends ContextTree(ctxRoot, ctxChildren) {

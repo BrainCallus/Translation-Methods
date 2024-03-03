@@ -1,0 +1,471 @@
+digraph G {
+0 [label = "calculator"]
+1 [label = "expr"]
+0 -> 1
+2 [label = "highPrior"]
+1 -> 2
+3 [label = "atom"]
+2 -> 3
+4 [label = "[SUB, -]"]
+3 -> 4
+5 [label = "[LPAREN, (]"]
+3 -> 5
+6 [label = "expr"]
+3 -> 6
+7 [label = "highPrior"]
+6 -> 7
+8 [label = "atom"]
+7 -> 8
+9 [label = "[SUB, -]"]
+8 -> 9
+10 [label = "[LPAREN, (]"]
+8 -> 10
+11 [label = "expr"]
+8 -> 11
+12 [label = "highPrior"]
+11 -> 12
+13 [label = "atom"]
+12 -> 13
+14 [label = "[LPAREN, (]"]
+13 -> 14
+15 [label = "expr"]
+13 -> 15
+16 [label = "highPrior"]
+15 -> 16
+17 [label = "atom"]
+16 -> 17
+18 [label = "[LPAREN, (]"]
+17 -> 18
+19 [label = "expr"]
+17 -> 19
+20 [label = "highPrior"]
+19 -> 20
+21 [label = "atom"]
+20 -> 21
+22 [label = "[NUMBER, 91757.20982999999]"]
+21 -> 22
+23 [label = "log"]
+20 -> 23
+24 [label = "muldiv"]
+19 -> 24
+25 [label = "[MUL, *]"]
+24 -> 25
+26 [label = "highPrior"]
+24 -> 26
+27 [label = "atom"]
+26 -> 27
+28 [label = "[SUB, -]"]
+27 -> 28
+29 [label = "[LPAREN, (]"]
+27 -> 29
+30 [label = "expr"]
+27 -> 30
+31 [label = "highPrior"]
+30 -> 31
+32 [label = "atom"]
+31 -> 32
+33 [label = "[LPAREN, (]"]
+32 -> 33
+34 [label = "expr"]
+32 -> 34
+35 [label = "highPrior"]
+34 -> 35
+36 [label = "atom"]
+35 -> 36
+37 [label = "[LPAREN, (]"]
+36 -> 37
+38 [label = "expr"]
+36 -> 38
+39 [label = "highPrior"]
+38 -> 39
+40 [label = "atom"]
+39 -> 40
+41 [label = "[NUMBER, -21518.00232]"]
+40 -> 41
+42 [label = "log"]
+39 -> 42
+43 [label = "muldiv"]
+38 -> 43
+44 [label = "addsub"]
+38 -> 44
+45 [label = "[RPAREN, )]"]
+36 -> 45
+46 [label = "log"]
+35 -> 46
+47 [label = "muldiv"]
+34 -> 47
+48 [label = "[MUL, *]"]
+47 -> 48
+49 [label = "highPrior"]
+47 -> 49
+50 [label = "atom"]
+49 -> 50
+51 [label = "[SUB, -]"]
+50 -> 51
+52 [label = "[LPAREN, (]"]
+50 -> 52
+53 [label = "expr"]
+50 -> 53
+54 [label = "highPrior"]
+53 -> 54
+55 [label = "atom"]
+54 -> 55
+56 [label = "[NUMBER, 28652.21128]"]
+55 -> 56
+57 [label = "log"]
+54 -> 57
+58 [label = "muldiv"]
+53 -> 58
+59 [label = "addsub"]
+53 -> 59
+60 [label = "[RPAREN, )]"]
+50 -> 60
+61 [label = "log"]
+49 -> 61
+62 [label = "muldiv"]
+47 -> 62
+63 [label = "addsub"]
+34 -> 63
+64 [label = "[RPAREN, )]"]
+32 -> 64
+65 [label = "log"]
+31 -> 65
+66 [label = "muldiv"]
+30 -> 66
+67 [label = "addsub"]
+30 -> 67
+68 [label = "[RPAREN, )]"]
+27 -> 68
+69 [label = "log"]
+26 -> 69
+70 [label = "muldiv"]
+24 -> 70
+71 [label = "[MUL, *]"]
+70 -> 71
+72 [label = "highPrior"]
+70 -> 72
+73 [label = "atom"]
+72 -> 73
+74 [label = "[LPAREN, (]"]
+73 -> 74
+75 [label = "expr"]
+73 -> 75
+76 [label = "highPrior"]
+75 -> 76
+77 [label = "atom"]
+76 -> 77
+78 [label = "[LPAREN, (]"]
+77 -> 78
+79 [label = "expr"]
+77 -> 79
+80 [label = "highPrior"]
+79 -> 80
+81 [label = "atom"]
+80 -> 81
+82 [label = "[LPAREN, (]"]
+81 -> 82
+83 [label = "expr"]
+81 -> 83
+84 [label = "highPrior"]
+83 -> 84
+85 [label = "atom"]
+84 -> 85
+86 [label = "[NUMBER, -178732.6575]"]
+85 -> 86
+87 [label = "log"]
+84 -> 87
+88 [label = "muldiv"]
+83 -> 88
+89 [label = "addsub"]
+83 -> 89
+90 [label = "[RPAREN, )]"]
+81 -> 90
+91 [label = "log"]
+80 -> 91
+92 [label = "muldiv"]
+79 -> 92
+93 [label = "[MUL, *]"]
+92 -> 93
+94 [label = "highPrior"]
+92 -> 94
+95 [label = "atom"]
+94 -> 95
+96 [label = "[NUMBER, -463911.62365]"]
+95 -> 96
+97 [label = "log"]
+94 -> 97
+98 [label = "muldiv"]
+92 -> 98
+99 [label = "addsub"]
+79 -> 99
+100 [label = "[RPAREN, )]"]
+77 -> 100
+101 [label = "log"]
+76 -> 101
+102 [label = "muldiv"]
+75 -> 102
+103 [label = "addsub"]
+75 -> 103
+104 [label = "[ADD, +]"]
+103 -> 104
+105 [label = "term"]
+103 -> 105
+106 [label = "highPrior"]
+105 -> 106
+107 [label = "atom"]
+106 -> 107
+108 [label = "[SUB, -]"]
+107 -> 108
+109 [label = "[LPAREN, (]"]
+107 -> 109
+110 [label = "expr"]
+107 -> 110
+111 [label = "highPrior"]
+110 -> 111
+112 [label = "atom"]
+111 -> 112
+113 [label = "[LPAREN, (]"]
+112 -> 113
+114 [label = "expr"]
+112 -> 114
+115 [label = "highPrior"]
+114 -> 115
+116 [label = "atom"]
+115 -> 116
+117 [label = "[NUMBER, 74464.98318]"]
+116 -> 117
+118 [label = "log"]
+115 -> 118
+119 [label = "muldiv"]
+114 -> 119
+120 [label = "addsub"]
+114 -> 120
+121 [label = "[RPAREN, )]"]
+112 -> 121
+122 [label = "log"]
+111 -> 122
+123 [label = "muldiv"]
+110 -> 123
+124 [label = "addsub"]
+110 -> 124
+125 [label = "[RPAREN, )]"]
+107 -> 125
+126 [label = "log"]
+106 -> 126
+127 [label = "muldiv"]
+105 -> 127
+128 [label = "addsub"]
+103 -> 128
+129 [label = "[RPAREN, )]"]
+73 -> 129
+130 [label = "log"]
+72 -> 130
+131 [label = "muldiv"]
+70 -> 131
+132 [label = "addsub"]
+19 -> 132
+133 [label = "[RPAREN, )]"]
+17 -> 133
+134 [label = "log"]
+16 -> 134
+135 [label = "muldiv"]
+15 -> 135
+136 [label = "[MUL, *]"]
+135 -> 136
+137 [label = "highPrior"]
+135 -> 137
+138 [label = "atom"]
+137 -> 138
+139 [label = "[NUMBER, -2015442.65961]"]
+138 -> 139
+140 [label = "log"]
+137 -> 140
+141 [label = "muldiv"]
+135 -> 141
+142 [label = "[DIV, /]"]
+141 -> 142
+143 [label = "highPrior"]
+141 -> 143
+144 [label = "atom"]
+143 -> 144
+145 [label = "[LPAREN, (]"]
+144 -> 145
+146 [label = "expr"]
+144 -> 146
+147 [label = "highPrior"]
+146 -> 147
+148 [label = "atom"]
+147 -> 148
+149 [label = "[LPAREN, (]"]
+148 -> 149
+150 [label = "expr"]
+148 -> 150
+151 [label = "highPrior"]
+150 -> 151
+152 [label = "atom"]
+151 -> 152
+153 [label = "[SUB, -]"]
+152 -> 153
+154 [label = "[LPAREN, (]"]
+152 -> 154
+155 [label = "expr"]
+152 -> 155
+156 [label = "highPrior"]
+155 -> 156
+157 [label = "atom"]
+156 -> 157
+158 [label = "[SUB, -]"]
+157 -> 158
+159 [label = "[LPAREN, (]"]
+157 -> 159
+160 [label = "expr"]
+157 -> 160
+161 [label = "highPrior"]
+160 -> 161
+162 [label = "atom"]
+161 -> 162
+163 [label = "[LPAREN, (]"]
+162 -> 163
+164 [label = "expr"]
+162 -> 164
+165 [label = "highPrior"]
+164 -> 165
+166 [label = "atom"]
+165 -> 166
+167 [label = "[NUMBER, 737077.77675]"]
+166 -> 167
+168 [label = "log"]
+165 -> 168
+169 [label = "muldiv"]
+164 -> 169
+170 [label = "addsub"]
+164 -> 170
+171 [label = "[RPAREN, )]"]
+162 -> 171
+172 [label = "log"]
+161 -> 172
+173 [label = "muldiv"]
+160 -> 173
+174 [label = "addsub"]
+160 -> 174
+175 [label = "[RPAREN, )]"]
+157 -> 175
+176 [label = "log"]
+156 -> 176
+177 [label = "muldiv"]
+155 -> 177
+178 [label = "addsub"]
+155 -> 178
+179 [label = "[RPAREN, )]"]
+152 -> 179
+180 [label = "log"]
+151 -> 180
+181 [label = "muldiv"]
+150 -> 181
+182 [label = "addsub"]
+150 -> 182
+183 [label = "[RPAREN, )]"]
+148 -> 183
+184 [label = "log"]
+147 -> 184
+185 [label = "muldiv"]
+146 -> 185
+186 [label = "addsub"]
+146 -> 186
+187 [label = "[SUB, -]"]
+186 -> 187
+188 [label = "term"]
+186 -> 188
+189 [label = "highPrior"]
+188 -> 189
+190 [label = "atom"]
+189 -> 190
+191 [label = "[NUMBER, 587276.46678]"]
+190 -> 191
+192 [label = "log"]
+189 -> 192
+193 [label = "muldiv"]
+188 -> 193
+194 [label = "addsub"]
+186 -> 194
+195 [label = "[RPAREN, )]"]
+144 -> 195
+196 [label = "log"]
+143 -> 196
+197 [label = "muldiv"]
+141 -> 197
+198 [label = "[MUL, *]"]
+197 -> 198
+199 [label = "highPrior"]
+197 -> 199
+200 [label = "atom"]
+199 -> 200
+201 [label = "[LPAREN, (]"]
+200 -> 201
+202 [label = "expr"]
+200 -> 202
+203 [label = "highPrior"]
+202 -> 203
+204 [label = "atom"]
+203 -> 204
+205 [label = "[SUB, -]"]
+204 -> 205
+206 [label = "[LPAREN, (]"]
+204 -> 206
+207 [label = "expr"]
+204 -> 207
+208 [label = "highPrior"]
+207 -> 208
+209 [label = "atom"]
+208 -> 209
+210 [label = "[NUMBER, -1659115.04512]"]
+209 -> 210
+211 [label = "log"]
+208 -> 211
+212 [label = "muldiv"]
+207 -> 212
+213 [label = "addsub"]
+207 -> 213
+214 [label = "[RPAREN, )]"]
+204 -> 214
+215 [label = "log"]
+203 -> 215
+216 [label = "muldiv"]
+202 -> 216
+217 [label = "addsub"]
+202 -> 217
+218 [label = "[RPAREN, )]"]
+200 -> 218
+219 [label = "log"]
+199 -> 219
+220 [label = "muldiv"]
+197 -> 220
+221 [label = "addsub"]
+15 -> 221
+222 [label = "[RPAREN, )]"]
+13 -> 222
+223 [label = "log"]
+12 -> 223
+224 [label = "muldiv"]
+11 -> 224
+225 [label = "addsub"]
+11 -> 225
+226 [label = "[RPAREN, )]"]
+8 -> 226
+227 [label = "log"]
+7 -> 227
+228 [label = "muldiv"]
+6 -> 228
+229 [label = "addsub"]
+6 -> 229
+230 [label = "[RPAREN, )]"]
+3 -> 230
+231 [label = "log"]
+2 -> 231
+232 [label = "muldiv"]
+1 -> 232
+233 [label = "addsub"]
+1 -> 233
+234 [label = "[EOF, ]"]
+0 -> 234
+}

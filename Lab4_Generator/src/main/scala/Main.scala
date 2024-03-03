@@ -41,7 +41,7 @@ object Main {
     generateFiles(calcPath)
     val calculatorParser = new CalculatorParser(
       new ByteArrayInputStream(
-        "  3* 10-          3+(1 - 1) * 2 +4/(1/2)".getBytes() // 35
+        "  64 // 4 // 2".getBytes() // 6
       )
     )
     val res = calculatorParser.calculator()

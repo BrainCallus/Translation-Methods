@@ -15,6 +15,7 @@ case class CalculatorLexer(inputStream: InputStream)
 	LexerRule[CalculatorToken](CalculatorToken.SUB, false),
 	LexerRule[CalculatorToken](CalculatorToken.MUL, false),
 	LexerRule[CalculatorToken](CalculatorToken.DIV, false),
+	LexerRule[CalculatorToken](CalculatorToken.LOG, false),
 	LexerRule[CalculatorToken](CalculatorToken.LPAREN, false),
 	LexerRule[CalculatorToken](CalculatorToken.RPAREN, false),
 	LexerRule[CalculatorToken](CalculatorToken.NUMBER, false),
