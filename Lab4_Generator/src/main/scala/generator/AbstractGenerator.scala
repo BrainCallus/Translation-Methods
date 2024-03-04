@@ -9,9 +9,7 @@ import java.nio.file.{Files, Path}
 
 trait AbstractGenerator {
   protected type StateWithWriter = BufferedWriter => State[Int, Unit]
-
   protected def grammar: Grammar[? <: Token]
-
   def generateFile(path: Path): Unit
 
   protected def writeHeaders(writer: BufferedWriter): Unit =
@@ -38,4 +36,7 @@ trait AbstractGenerator {
   }
 
   protected def getEnumName = s"${grammar.name}Token"
+  protected def getParserName: String = s"${grammar.name}Parser"
+
+  protected def getLexerName: String = s"${grammar.name}Lexer"
 }

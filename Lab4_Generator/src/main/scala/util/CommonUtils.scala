@@ -1,11 +1,12 @@
 package util
+import cats.data.State
+import template.AbstractLexer
 import util.GrammarTree._
 
 import scala.annotation.tailrec
 import scala.jdk.javaapi.CollectionConverters.asScala
 
 object CommonUtils {
-
   def convertList[T](list: java.util.List[T]): List[T] = {
     asScala(list.iterator()).toList
   }
@@ -21,6 +22,11 @@ object CommonUtils {
           accum ++ treeToStringList(tree)
         })(tree.children)
     }
+
+  def getEmptyListState[T <: AbstractLexer[_]]: State[T, List[GrammarTree[_]]] =
+    State(lex => (lex, List.empty))
+  def getCurState[T <: AbstractLexer[_]](trees: List[GrammarTree[_]]): State[T, List[GrammarTree[_]]] =
+    State(lex => (lex, trees))
 
   def foldl[T, E](accum: E)(func: (E, T) => E)(list: List[T]): E = doFoldl(accum)(func)(list)
 

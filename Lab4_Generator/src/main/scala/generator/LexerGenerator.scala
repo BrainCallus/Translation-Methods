@@ -30,8 +30,8 @@ case class LexerGenerator(grammar: Grammar[? <: Token]) extends AbstractGenerato
       val state = for {
         _ <- writeState(
           writer,
-          s"case class $className(inputStream: InputStream)\n" +
-            s"  extends AbstractLexer[$getEnumName](inputStream) {"
+          s"case class $className(inputStream: InputStream, lexerParams: LexerParams)\n" +
+            s"  extends AbstractLexer[$getEnumName](inputStream, lexerParams) {"
         )(x => x + 1)
         _ <- writeState(writer, s"override val lexerRules = List($getLexerRulesAsString)")(identity)
         _ <- writeTokenWithName(writer).modify(_ - 1)
@@ -49,10 +49,7 @@ case class LexerGenerator(grammar: Grammar[? <: Token]) extends AbstractGenerato
     } yield ()
   }
 
-  private def getLexerName: String = grammar.name + "Lexer"
-
   private def getLexerRulesAsString: String = {
-
     grammar.lexerRules
       .map(rule => s"LexerRule[$getEnumName]($getEnumName.${rule.token.getName}, ${rule.skip})")
       .mkString("\n\t", ",\n\t", "\n  ")

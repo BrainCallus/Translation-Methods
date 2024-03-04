@@ -58,9 +58,8 @@ object WriteUtil {
   def writeState(writer: BufferedWriter, line: String)(modify: Int => Int): State[Int, Unit] =
     State(offset =>
       (
-        modify(offset), {
-          writeLine(writer, line, offset)
-        }
+        modify(offset),
+        writeLine(writer, line, offset)
       )
     )
 

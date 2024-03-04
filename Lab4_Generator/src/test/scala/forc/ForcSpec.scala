@@ -14,9 +14,10 @@ import java.io.ByteArrayInputStream
 class ForcSpec extends ParserSpec[Forc, ForcContext] {
   override val DEFAULT_TEST_SIZE = 100
   override def callParse: ByteArrayInputStream => ForcContext = (bytes: ByteArrayInputStream) => {
-    ForcParser(bytes).forc()
-  }
+    val parser = ForcParser(bytes)
+    parser.forc().runA(parser.lex).value
 
+  }
   override def verifyParseResult(res: ForcContext, sample: Forc, id: String): Assertion = {
     assertResult(treeToStringList(res).mkString(" "))(treeToStringList(res.res).mkString(" "))
   }

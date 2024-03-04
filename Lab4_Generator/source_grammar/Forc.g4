@@ -14,18 +14,18 @@ inner returns[ContextTree res]:
 
 p1 returns[String name, ContextTree res]:
                             t = TYPE_NAME n = NAME e = EQ num = NUMBER
-                            {$name = n.text;
-                            $res = P1Context("P1", List(TerminalTree(t), TerminalTree(n),  TerminalTree(e), TerminalTree(num)));};
+                            {$name = n.text
+$res = P1Context("P1", List(TerminalTree(t), TerminalTree(n),  TerminalTree(e), TerminalTree(num)));};
 
 p2[String name] returns[ContextTree res]:
-                            n = NAME {if(n.text != name) {
+                            n = NAME {c2 = if(n.text != name) {
     throw new ParseException(s"Invalid variable name. Variable name was declared as \"" + name+ s"\", but got ${n.text}", lex.curPos())
 }}
                             c = cmp
                             num = NUMBER {$res = P2Context("P2", List(TerminalTree(n), c.res, TerminalTree(num)))};
 
 p3[String name] returns[ContextTree res]:
-                            n=NAME {if(n.text != name) {
+                            n=NAME {c3 = if(n.text != name) {
     throw new ParseException(s"Invalid variable name. Variable name was declared as \"" + name+ s"\", but got ${n.text}", lex.curPos())
 }}
                             i=incdec {$res = P3Context("P3", List(TerminalTree(n), i.res));};

@@ -16,7 +16,7 @@ import scala.collection.immutable.Queue
 
 abstract class AbstractLexer[T <: Token](
   inputStream: InputStream,
-  var lexerParams: LexerParams = LexerParams(TokenizedEmpty, 0, 0, -2)
+  lexerParams: LexerParams
 ) {
   def apply[L <: AbstractLexer[_ <: Token]](inputStream: InputStream): L = this(inputStream)
 
@@ -40,12 +40,7 @@ abstract class AbstractLexer[T <: Token](
     }
   }
 
-  def nextToken(): LexerParams = {
-    val newParams = processCurToken(this.lexerParams, skip = true)
-    // val newParams = rudeNextToken(this.lexerParams)
-    this.lexerParams = newParams
-    lexerParams
-  }
+  def nextToken(): LexerParams = processCurToken(this.lexerParams, skip = true)
 
   @tailrec
   private def processCurToken(
@@ -140,56 +135,9 @@ abstract class AbstractLexer[T <: Token](
       }
     }.redeem(e => throw new ParseException(e.getMessage, -1), identity).unsafeRunSync()
   }
-
-  // private def rudeNextToken(lexerParams: LexerParams): LexerParams = {
-  //   var tokenized: Tokenized = TokenizedEmpty
-  //  // val curPos = lexerParams.curPos
-  //   var curParams = lexerParams
-  //   do {
-  //     var candidates = lexerRules.toSet
-  //     tokenized = TokenizedEmpty
-  //     var newPos = curParams.curPos
-  //     while (!curParams.signalizeEnd && candidates.nonEmpty) {
-  //       var newCandidates = Set.empty[LexerRule[T]]
-  //       for (candidate <- candidates) {
-  //         val curStr = getBufferedString(curParams.buffer)
-  //         val matcher = Pattern.compile(candidate.token.getPatternAsString).matcher(curStr)
-  //         matcher.matches()
-  //         if (matcher.hitEnd() && curParams.lastRead != -1) {
-  //           newCandidates = newCandidates + candidate
-  //         }
-  //         if (matcher.lookingAt()) {
-  //           val matchedStr = curStr.substring(0, matcher.end())
-  //           val token = candidate.token
-  //           if (tokenized == TokenizedEmpty) {
-  //             tokenized = TokenizedValue(token, matchedStr, curParams.curPos, candidate.skip)
-  //             newPos = curParams.curPos + matcher.end()
-  //           } else if (tokenized.asInstanceOf[TokenizedValue[T]].tokenLen < matcher.end()) {
-  //             tokenized = TokenizedValue(token, matchedStr, curParams.curPos, candidate.skip)
-  //             newPos = curParams.curPos + matcher.end()
-  //           }
-  //         }
-  //       }
-  //       candidates = newCandidates
-  //       curParams = nextChar(curParams)
-  //     }
-//
-  //     if (curParams.signalizeEnd) {
-  //       tokenized = TokenizedValue(getTokenWithName("EOF"), "", curParams.curPos, false)
-  //     }
-  //     if (tokenized == TokenizedEmpty) {
-  //       throw new ParseException("Recognition error at " + getBufferedString(curParams.buffer), curParams.curPos)
-  //     }
-  //     curParams = removeProcessedChars(newPos)(curParams)
-//
-  //   } while (tokenized.asInstanceOf[TokenizedValue[T]].skip)
-  //     LexerParams(tokenized, curParams.curPos, curParams.realPos, curParams.lastRead, curParams.buffer)
-  // }
-
 }
 
 object AbstractLexer {
-
   case class LexerParams(
     tokenized: Tokenized,
     curPos: Int,
@@ -199,5 +147,4 @@ object AbstractLexer {
   ) {
     def signalizeEnd: Boolean = curPos == realPos && lastRead == -1
   }
-
 }

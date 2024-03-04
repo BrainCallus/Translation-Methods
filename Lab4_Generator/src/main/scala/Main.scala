@@ -1,7 +1,9 @@
 import antlr.{LexerGrammar, ParserGrammar}
 import calculator.CalculatorParser
+import cats.data.State
 import forc.ForcParser
 import forc.ForcParser.ForcContext
+
 import generator.{LexerGenerator, ParserGenerator, TokenGenerator}
 import grammar.entry.{GrammarEntry, NonTerminal, TranslatingSymbol}
 import grammar.{Grammar, LexerRule, ParserRule, Token}
@@ -25,15 +27,17 @@ object Main {
   def main(args: Array[String]): Unit = {
     generateAndRunCalc()
     generateAndRunFor()
-
   }
+
+  def getState(arg: Int, f: String => String): State[String, Int] =
+    State(str => (f(str), arg))
 
   private def generateAndRunFor(): Unit = {
     generateFiles(forPath)
     val forcParser = ForcParser(
       new ByteArrayInputStream("for     (long vArfor1i=1000   ; vArfor1i<=    -10;vArfor1i-- )".getBytes())
     )
-    val res: ForcContext = forcParser.forc()
+    val res: ForcContext = forcParser.forc().run(forcParser.lex).value._2
     makeGraph(res.res, "graphviz\\forc\\graphFor.dot")
   }
 
@@ -41,11 +45,11 @@ object Main {
     generateFiles(calcPath)
     val calculatorParser = new CalculatorParser(
       new ByteArrayInputStream(
-        "  64 // 4 // 2".getBytes() // 6
+        "  64 // 4 // 2 + 2*2/(2/2) - 10".getBytes() // 0
       )
     )
     val res = calculatorParser.calculator()
-    println(res.res)
+    println(res.run(calculatorParser.lex).value._2.res)
   }
 
   private def generateFiles(path: String): Unit = {
@@ -82,7 +86,6 @@ object Main {
   }
 
   private def toParserRules(parserRules: List[JavaParserRule]): List[ParserRule] = {
-
     parserRules.map(pr =>
       ParserRule(
         pr.name,

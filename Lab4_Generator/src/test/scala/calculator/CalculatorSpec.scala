@@ -19,8 +19,10 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
   private val outputDir = "graphviz\\calculator"
   val ExprVerify: Expression[Verifiers] = Expression[Verifiers]
   val DEFAULT_TEST_SIZE = 100
-  override def callParse: ByteArrayInputStream => CalculatorContext = (bytes: ByteArrayInputStream) =>
-    CalculatorParser(bytes).calculator()
+  override def callParse: ByteArrayInputStream => CalculatorContext = (bytes: ByteArrayInputStream) => {
+    val parser = CalculatorParser(bytes)
+    parser.calculator().runA(parser.lex).value
+  }
 
   override def verifyParseResult(res: CalculatorContext, sample: Calculator, id: String): Assertion = {
     val expectedRes = sample.res.toDouble
