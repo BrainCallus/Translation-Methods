@@ -8,14 +8,14 @@ import calculator.dsl.{Algebraic, Calculator, Expression}
 import common.ParserSpec
 import util.CommonUtils.treeToStringList
 import common.RandomUtil.{generateVarName, randDouble, unbiasedCoin}
-import org.scalatest.Assertion
+import org.scalatest.{Assertion, BeforeAndAfterAll}
 import util.Ternary.Ternary
 import util.WriteUtil.{clearDirectoryFiles, makeGraph}
 
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
 
-class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
+class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] with BeforeAndAfterAll {
   private val outputDir = "graphviz\\calculator"
   val ExprVerify: Expression[Verifiers] = Expression[Verifiers]
   val DEFAULT_TEST_SIZE = 100
@@ -43,6 +43,10 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
     }
   }
 
+  override def beforeAll(): Unit = {
+    clearOutput(Path.of(outputDir))
+  }
+
   "calculator" should "parse and calculate numbers correct" in {
     validSeries(buildCalc(ExprVerify.number(randDouble)), "Number")
 
@@ -66,7 +70,6 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
   }
 
   it should "parse and calculate random correct expression" in {
-    clearOutput(Path.of(outputDir))
     validSeries(buildCalc(generateArbitraryExpression[Verifiers]()), "RandExpression")
   }
 
@@ -123,6 +126,7 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
     invalidSeries(buildCalc(generateArbitraryExpression[Verifiers]()), c => "(" + c.generateStringSample)
     invalidSeries(buildCalc(generateArbitraryExpression[Verifiers]()), c => ")" + c.generateStringSample)
   }
+
   private def buildCalc(alg: Algebraic[Verifiers]): Calculator = Calculator(alg)
 
   private def clearOutput(path: Path): Unit = {

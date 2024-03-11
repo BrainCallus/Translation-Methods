@@ -23,11 +23,6 @@ object CommonUtils {
         })(tree.children)
     }
 
-  def getEmptyListState[T <: AbstractLexer[_]]: State[T, List[GrammarTree[_]]] =
-    State(lex => (lex, List.empty))
-  def getCurState[T <: AbstractLexer[_]](trees: List[GrammarTree[_]]): State[T, List[GrammarTree[_]]] =
-    State(lex => (lex, trees))
-
   def foldl[T, E](accum: E)(func: (E, T) => E)(list: List[T]): E = doFoldl(accum)(func)(list)
 
   @tailrec

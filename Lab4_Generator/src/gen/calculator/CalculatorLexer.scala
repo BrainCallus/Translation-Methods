@@ -1,12 +1,12 @@
 
 package calculator;
 
-import grammar.LexerRule;
-import template.AbstractLexer;
-import java.text.ParseException;
-import java.io.InputStream;
-import template.AbstractLexer._;
-import template.Tokenized._;
+import grammar.LexerRule
+import template.AbstractLexer
+import java.text.ParseException
+import java.io.InputStream
+import template.AbstractLexer._
+import template.Tokenized._
 
 case class CalculatorLexer(inputStream: InputStream, lexerParams: LexerParams)
   extends AbstractLexer[CalculatorToken](inputStream, lexerParams) {

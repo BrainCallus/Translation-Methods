@@ -26,7 +26,6 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
     "cats.data.State",
     "template.Tokenized._"
   )
-  // todo: writer.newLine()
 
   override def generateFile(path: Path): Unit = {
     val className = getParserName
@@ -88,7 +87,7 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
       )(_ + 1)
 
       _ <- writeState(writer, s"for { ")(_ + 1)
-      _ <- writeState(writer, s"lex <- getEmptyListState[$getLexerName].inspect(lex => lex)")(identity)
+      _ <- writeState(writer, s"lex <- State.get[$getLexerName]")(identity)
       _ <- {
         val st = writeState(writer, s"res <- ")(_ + 1)
 
@@ -129,19 +128,18 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
 
     for {
       _ <- writeState(writer, s"${elseif ?? ("else if", "if")}($cond) {")(_ + 1)
-      _ <- writeState(writer, "val result = for {")(_ + 1)
-      _ <- entries.foldLeft(writeState(writer, s"curState <- getEmptyListState[$getLexerName]")(identity))(
-        (state, entry) => state.flatMap(_ => writeEntryInRuleCond(entry)(writer))
-      )
-      _ <- writeState(writer, s"children <- getCurState[$getLexerName](curState)")(_ - 1)
+      _ <- writeState(writer, "for {")(_ + 1)
+      _ <- entries.foldLeft(
+        writeState(writer, s"curState <- State.pure[$getLexerName, List[GrammarTree[_]]](List.empty)")(identity)
+      )((state, entry) => state.flatMap(_ => writeEntryInRuleCond(entry)(writer)))
+      _ <- writeState(writer, s"children <- State.pure[$getLexerName, List[GrammarTree[_]]](curState)")(_ - 1)
       _ <- writeState(
         writer, {
           val attrs = parserRule.synteticAttrs.map(attr => s"${attr.attrValue}").mkString(", ")
-          s"} yield(${getContextName(parserRule)}(\"${parserRule.name}\", children.reverse" +
-            s"${attrs.isEmpty ?? ("", ", " ++ attrs)}))"
+          s"} yield ${getContextName(parserRule)}(\"${parserRule.name}\", children.reverse" +
+            s"${attrs.isEmpty ?? ("", ", " ++ attrs)})"
         }
-      )(identity)
-      _ <- writeState(writer, "result")(_ - 1)
+      )(_ - 1)
       _ <- writeState(writer, "}")(identity)
     } yield ()
   }
@@ -151,7 +149,10 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
       case nt: NonTerminal =>
         for {
           _ <- writeState(writer, s"${nt.name} <- ${nt.value}(${nt.translatingSymbol.code})")(identity)
-          _ <- writeState(writer, s"curState <- getCurState[$getLexerName](curState).map(list => ${nt.name} :: list)")(
+          _ <- writeState(
+            writer,
+            s"curState <- State.pure[$getLexerName, List[GrammarTree[_]]](curState).map(list => ${nt.name} :: list)"
+          )(
             identity
           )
         } yield ()
@@ -159,18 +160,17 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
         for {
           _ <- writeState(
             writer,
-            s"${term.name} <- getCurState[$getLexerName](curState).inspect(lexer => lexer.curToken())"
+            s"${term.name} <- State.pure[$getLexerName, List[GrammarTree[_]]](curState).inspect(lexer => lexer.curToken())"
           )(identity)
-          _ <- writeState(writer, s"_ <- getCurState[$getLexerName](curState).inspect(lexer => {")(_ + 1)
-          _ <- writeState(writer, s"if(!lexer.compareToken(${getEnumValue(term.value)})) {")(_ + 1)
+          _ <- writeState(writer, s"lexer <- State.get[$getLexerName]")(identity)
+          _ <- writeState(writer, s"_ = if(!lexer.compareToken(${getEnumValue(term.value)})) {")(_ + 1)
           _ <- writeState(
             writer,
             s"throw new ParseException(\"Expected ${term.value}, found:\" + lexer.curToken().text, lexer.curPos())"
           )(_ - 1)
-          _ <- writeState(writer, s"}")(_ - 1)
-          _ <- writeState(writer, "})")(identity)
-          _ <- writeState(writer, s"curState <- getCurState[$getLexerName](curState)")(_ + 1)
-          _ <- writeState(writer, s".inspect(lexer => TerminalTree(lexer.curToken()) :: curState)")(identity)
+          _ <- writeState(writer, s"}")(identity)
+          _ <- writeState(writer, s"curState <- State.pure[$getLexerName, List[GrammarTree[_]]](curState)")(_ + 1)
+          _ <- writeState(writer, s".map(list => TerminalTree(lexer.curToken()) :: list)")(identity)
           _ <- writeState(writer, s".modify(lexer => $getLexerName(lexer.inputStream, lexer.nextToken()))")(_ - 1)
         } yield ()
       case trans: TranslatingSymbol =>
@@ -191,21 +191,22 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
 
   private def writeRuleContext(rule: ParserRule): BufferedWriter => State[Int, Unit] = {
     implicit writer: BufferedWriter =>
+      val contextName = getContextName(rule)
       for {
         _ <- writeState(
           writer, {
             val attrs = getRuleSynteticAttrsForContext(rule)
-            s"case class ${getContextName(rule)}(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty" +
+            s"case class $contextName(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty" +
               s"${attrs.isEmpty ?? ("", ", " ++ attrs)}) extends ContextTree(ctxRoot, ctxChildren) {"
           }
         )(_ + 1)
         _ <- writeState(
           writer,
-          s"override def pushFirstChild(child: GrammarTree[_]) = ${getContextName(rule)}(ctxRoot, child::ctxChildren)"
+          s"override def pushFirstChild(child: GrammarTree[_]): $contextName = $contextName(ctxRoot, child::ctxChildren)"
         )(identity)
         _ <- writeState(
           writer,
-          s"override def appendLastChild(child: GrammarTree[_]) = ${getContextName(rule)}(ctxRoot, ctxChildren ++ List(child))"
+          s"override def appendLastChild(child: GrammarTree[_]): $contextName = $contextName(ctxRoot, ctxChildren ++ List(child))"
         )(_ - 1)
         _ <- writeState(writer, " }")(identity)
       } yield ()
@@ -213,7 +214,7 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
 
   private def getRuleSynteticAttrsForContext(rule: ParserRule): String =
     rule.synteticAttrs
-      .map(attr => s"val ${attr.attrValue}: ${attr.attrType} = ${getDefaultValueByTypeAsString(attr.attrType)}")
+      .map(attr => s"${attr.attrValue}: ${attr.attrType} = ${getDefaultValueByTypeAsString(attr.attrType)}")
       .mkString(", ")
 
   private def getEnumValue(value: String) =

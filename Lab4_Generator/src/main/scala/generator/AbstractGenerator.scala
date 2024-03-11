@@ -30,7 +30,7 @@ trait AbstractGenerator {
 
   def writeImports(writer: BufferedWriter, imports: List[String]): Unit = {
     for (imprt <- imports) {
-      writeLine(writer, s"import $imprt;", 0)
+      writeLine(writer, s"import $imprt", 0)
     }
     writer.newLine()
   }

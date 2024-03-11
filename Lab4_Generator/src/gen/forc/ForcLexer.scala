@@ -1,12 +1,12 @@
 
 package forc;
 
-import grammar.LexerRule;
-import template.AbstractLexer;
-import java.text.ParseException;
-import java.io.InputStream;
-import template.AbstractLexer._;
-import template.Tokenized._;
+import grammar.LexerRule
+import template.AbstractLexer
+import java.text.ParseException
+import java.io.InputStream
+import template.AbstractLexer._
+import template.Tokenized._
 
 case class ForcLexer(inputStream: InputStream, lexerParams: LexerParams)
   extends AbstractLexer[ForcToken](inputStream, lexerParams) {
