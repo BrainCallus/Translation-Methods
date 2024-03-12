@@ -28,7 +28,6 @@ case class TokenGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerato
       } yield ()
       state.runA(0).value
     }
-
   }
 
   private def tokenEnumName = grammar.name + "Token"
@@ -48,7 +47,6 @@ case class TokenGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerato
         writer,
         "}"
       )(identity)
-
   }
 
   private def writeToken(name: String, pattern: String): BufferedWriter => State[Int, Unit] = {

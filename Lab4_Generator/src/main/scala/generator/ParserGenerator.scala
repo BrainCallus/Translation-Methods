@@ -17,14 +17,16 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
     "grammar.LexerRule",
     "template.AbstractLexer",
     "template.AbstractLexer.LexerParams",
+    "template.Tokenized._",
     "util.Tree",
     "util.GrammarTree",
     "util.GrammarTree._",
     "util.CommonUtils._",
+    "util.TypeOps._",
     "java.text.ParseException",
     "java.io.InputStream",
-    "cats.data.State",
-    "template.Tokenized._"
+    "cats.data.{EitherT, StateT}",
+    "cats.Monad"
   )
 
   override def generateFile(path: Path): Unit = {
@@ -34,47 +36,40 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
     Using(Files.newBufferedWriter(file, StandardCharsets.UTF_8)) { writer =>
       writeHeaders(writer)
       writeImports(writer, s"$className._" :: IMPORTS)
-      val st = for {
-        _ <- writeState(writer, s"case class $className(inputStream: InputStream) {")(_ + 1)
-        _ <- writeState(
-          writer,
-          s"val lex: $getLexerName = $getLexerName(inputStream, " +
-            s"$getLexerName(inputStream, LexerParams(TokenizedEmpty, 0, 0, -2)).nextToken())"
-        )(identity)
-      } yield ()
       val st2 = for {
-        _ <- grammar.parserRules.values
-          .foldLeft(st)((state, rule) =>
-            for {
-              _ <- state
-              _ <- writeParseRule(rule).andThen(s => {
-                writer.newLine()
-                s
-              })(writer)
-            } yield ()
-          )
-          .modify(_ - 1)
-        _ <- writeState(writer, "}\n")(identity)
+        _ <- writeParserClass()(writer)
         _ <- writeParserCompanion(grammar.parserRules.values.toList)(writer)
       } yield ()
       st2.runA(0).value
     }
   }
 
-  private def writeParserCompanion(rules: List[ParserRule]): StateWithWriter = { implicit writer: BufferedWriter =>
+  private val parseStateName = s"${grammar.name}ParseState"
+  private val metName = s"${grammar.name}MET"
+
+  private def writeParserClass(): StateWithWriter = { implicit writer: BufferedWriter =>
     for {
-      _ <- rules
-        .foldLeft(writeState(writer, s"object $getParserName {")(_ + 1))((state, rule) =>
+      _ <- writeState(writer, s"case class $getParserName[F[_]: Monad](inputStream: InputStream) {")(_ + 1)
+      _ <- writeState(writer, s"private type $metName[A] = MkContainer[MET, F]#Cont[A]")(identity)
+      _ <- writeState(writer, s"type $parseStateName[A] = ParseState[F, $getLexerName, A]")(identity)
+      st = writeState(
+        writer,
+        s"val lex: $getLexerName = $getLexerName(inputStream, " +
+          s"$getLexerName(inputStream,\n    LexerParams(TokenizedEmpty, 0, 0, -2)).nextToken()" +
+          ".getOrElse(LexerParams(TokenizedEmpty, 0, 0, -2)))"
+      )(identity)
+      _ <- grammar.parserRules.values
+        .foldLeft(st)((state, rule) =>
           for {
             _ <- state
-            _ <- writeRuleContext(rule).andThen(s => {
+            _ <- writeParseRule(rule).andThen(s => {
               writer.newLine()
               s
             })(writer)
           } yield ()
         )
-        .modify(_ - 1)
-      _ <- writeState(writer, "}")(identity)
+      _ <- writeLexerNext(writer).modify(_ - 1)
+      _ <- writeState(writer, "}\n")(identity)
     } yield ()
   }
 
@@ -83,11 +78,11 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
       _ <- writeState(
         writer,
         s"def ${rule.name}(${rule.inheritAttrs.map(attr => attr.attrValue + " : " + attr.attrType).mkString(", ")}) "
-          + s": State[$getLexerName, ${getContextName(rule)}] = {"
+          + s": $parseStateName[${getContextName(rule)}] = {"
       )(_ + 1)
 
       _ <- writeState(writer, s"for { ")(_ + 1)
-      _ <- writeState(writer, s"lex <- State.get[$getLexerName]")(identity)
+      _ <- writeState(writer, s"lex <- StateT.get[$metName, $getLexerName]")(identity)
       _ <- {
         val st = writeState(writer, s"res <- ")(_ + 1)
 
@@ -102,7 +97,8 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
         }
       }
       _ <- {
-        val exceptionStr = s"throw new ParseException(\"Unexpected token: \" + lex.curToken().text, lex.curPos())"
+        val exceptionStr =
+          s"throwPEStateT[F, $getLexerName, ${getContextName(rule)}](\"Unexpected token: \" + lex.curToken())"
         (rule.rules.toList == Nil) ?? (
           writeState(writer, exceptionStr)(identity),
           for {
@@ -127,12 +123,16 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
     s"Set(${nextElems.map(s => s"${getEnumValue(s)}").mkString(", ")})") + ")"
 
     for {
-      _ <- writeState(writer, s"${elseif ?? ("else if", "if")}($cond) {")(_ + 1)
+      _ <- writeState(writer, s"${elseif ?? ("else if", "if")} ($cond) {")(_ + 1)
       _ <- writeState(writer, "for {")(_ + 1)
       _ <- entries.foldLeft(
-        writeState(writer, s"curState <- State.pure[$getLexerName, List[GrammarTree[_]]](List.empty)")(identity)
+        writeState(writer, s"curState <- StateT.pure[$metName, $getLexerName, List[GrammarTree[_]]](List.empty)")(
+          identity
+        )
       )((state, entry) => state.flatMap(_ => writeEntryInRuleCond(entry)(writer)))
-      _ <- writeState(writer, s"children <- State.pure[$getLexerName, List[GrammarTree[_]]](curState)")(_ - 1)
+      _ <- writeState(writer, s"children <- StateT.pure[$metName, $getLexerName, List[GrammarTree[_]]](curState)")(
+        _ - 1
+      )
       _ <- writeState(
         writer, {
           val attrs = parserRule.synteticAttrs.map(attr => s"${attr.attrValue}").mkString(", ")
@@ -151,7 +151,7 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
           _ <- writeState(writer, s"${nt.name} <- ${nt.value}(${nt.translatingSymbol.code})")(identity)
           _ <- writeState(
             writer,
-            s"curState <- State.pure[$getLexerName, List[GrammarTree[_]]](curState).map(list => ${nt.name} :: list)"
+            s"curState <- StateT.pure[$metName, $getLexerName, List[GrammarTree[_]]](curState).map(list => ${nt.name} :: list)"
           )(
             identity
           )
@@ -160,18 +160,15 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
         for {
           _ <- writeState(
             writer,
-            s"${term.name} <- State.pure[$getLexerName, List[GrammarTree[_]]](curState).inspect(lexer => lexer.curToken())"
+            s"${term.name} <- StateT.get[$metName, $getLexerName].map(lexer => lexer.curToken())"
           )(identity)
-          _ <- writeState(writer, s"lexer <- State.get[$getLexerName]")(identity)
-          _ <- writeState(writer, s"_ = if(!lexer.compareToken(${getEnumValue(term.value)})) {")(_ + 1)
-          _ <- writeState(
-            writer,
-            s"throw new ParseException(\"Expected ${term.value}, found:\" + lexer.curToken().text, lexer.curPos())"
-          )(_ - 1)
-          _ <- writeState(writer, s"}")(identity)
-          _ <- writeState(writer, s"curState <- State.pure[$getLexerName, List[GrammarTree[_]]](curState)")(_ + 1)
-          _ <- writeState(writer, s".map(list => TerminalTree(lexer.curToken()) :: list)")(identity)
-          _ <- writeState(writer, s".modify(lexer => $getLexerName(lexer.inputStream, lexer.nextToken()))")(_ - 1)
+          _ <- writeState(writer, s"lexer <- StateT.get[$metName, $getLexerName]")(identity)
+          _ <- writeCurTokenCheck(term)(writer)
+          _ <- writeState(writer, s"curState <- StateT.pure[$metName, $getLexerName, List[GrammarTree[_]]](curState)")(
+            _ + 1
+          )
+          _ <- writeState(writer, s".map(list => TerminalTree(lexer.curToken()) :: list)")(_ - 1)
+          _ <- writeState(writer, s"curState <- getLexerWithNextToken(curState)")(identity)
         } yield ()
       case trans: TranslatingSymbol =>
         for {
@@ -189,6 +186,55 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
     }
   }
 
+  private def writeCurTokenCheck(term: Terminal): StateWithWriter = { implicit writer: BufferedWriter =>
+    for {
+      _ <- writeState(writer, s"_ <-")(_ + 1)
+      _ <- writeState(writer, s"if (!lexer.compareToken(${getEnumValue(term.value)})) {")(_ + 1)
+      _ <- writeState(
+        writer,
+        s"throwPEStateT[F, $getLexerName, List[GrammarTree[_]]](\"Expected ${term.value}, found:\" + lexer.curToken().text)"
+      )(_ - 1)
+      _ <- writeState(writer, s"} else {")(_ + 1)
+      _ <- writeState(writer, s"StateT.pure[$metName, $getLexerName, List[GrammarTree[_]]](curState)")(_ - 1)
+      _ <- writeState(writer, "}")(_ - 1)
+    } yield ()
+  }
+
+  private def writeLexerNext: StateWithWriter = { implicit writer: BufferedWriter =>
+    for {
+      _ <- writeState(writer, "")(identity)
+      _ <- writeState(
+        writer,
+        s"private def getLexerWithNextToken(curState: List[GrammarTree[_]])" +
+          s": $parseStateName[List[GrammarTree[_]]] = {"
+      )(_ + 1)
+      _ <- writeState(writer, s"StateT.apply[$metName, $getLexerName, List[GrammarTree[_]]] { lexer =>")(_ + 1)
+      _ <- writeState(writer, s"lexer.nextToken().fold(")(_ + 1)
+      _ <- writeState(writer, s"e => EitherT.leftT(e),")(identity)
+      _ <- writeState(writer, s"params => EitherT.rightT(($getLexerName(lexer.inputStream, params), curState))")(_ - 1)
+      _ <- writeState(writer, ")")(_ - 1)
+      _ <- writeState(writer, "}")(_ - 1)
+      _ <- writeState(writer, "}")(identity)
+    } yield ()
+  }
+
+  private def writeParserCompanion(rules: List[ParserRule]): StateWithWriter = { implicit writer: BufferedWriter =>
+    for {
+      _ <- rules
+        .foldLeft(writeState(writer, s"object $getParserName {")(_ + 1))((state, rule) =>
+          for {
+            _ <- state
+            _ <- writeRuleContext(rule).andThen(s => {
+              writer.newLine()
+              s
+            })(writer)
+          } yield ()
+        )
+        .modify(_ - 1)
+      _ <- writeState(writer, "}")(identity)
+    } yield ()
+  }
+
   private def writeRuleContext(rule: ParserRule): BufferedWriter => State[Int, Unit] = {
     implicit writer: BufferedWriter =>
       val contextName = getContextName(rule)
@@ -197,7 +243,7 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
           writer, {
             val attrs = getRuleSynteticAttrsForContext(rule)
             s"case class $contextName(ctxRoot: String, ctxChildren: List[GrammarTree[_]] = List.empty" +
-              s"${attrs.isEmpty ?? ("", ", " ++ attrs)}) extends ContextTree(ctxRoot, ctxChildren) {"
+              s"${attrs.isEmpty ?? ("", ", " ++ attrs)})\n  extends ContextTree(ctxRoot, ctxChildren) {"
           }
         )(_ + 1)
         _ <- writeState(
@@ -208,7 +254,7 @@ case class ParserGenerator(grammar: Grammar[_ <: Token]) extends AbstractGenerat
           writer,
           s"override def appendLastChild(child: GrammarTree[_]): $contextName = $contextName(ctxRoot, ctxChildren ++ List(child))"
         )(_ - 1)
-        _ <- writeState(writer, " }")(identity)
+        _ <- writeState(writer, "}")(identity)
       } yield ()
   }
 

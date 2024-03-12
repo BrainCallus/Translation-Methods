@@ -10,7 +10,7 @@ import template.Tokenized._
 
 case class ForcLexer(inputStream: InputStream, lexerParams: LexerParams)
   extends AbstractLexer[ForcToken](inputStream, lexerParams) {
-	override val lexerRules = List(
+  override val lexerRules = List(
 	LexerRule[ForcToken](ForcToken.LPAREN, false),
 	LexerRule[ForcToken](ForcToken.RPAREN, false),
 	LexerRule[ForcToken](ForcToken.SEMICOLON, false),
@@ -27,7 +27,7 @@ case class ForcLexer(inputStream: InputStream, lexerParams: LexerParams)
 	LexerRule[ForcToken](ForcToken.NAME, false),
 	LexerRule[ForcToken](ForcToken.SPACES, true)
   )
-	override def getTokenWithName(name: String): ForcToken = { 
-		ForcToken.withName(name)
-	}
+  override def getTokenWithName(name: String): ForcToken = { 
+    ForcToken.withName(name)
+  }
 }

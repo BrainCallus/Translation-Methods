@@ -3,11 +3,10 @@ package template
 import grammar.{LexerRule, Token}
 
 import java.io.InputStream
-import cats.effect.IO
-import cats.effect.unsafe.implicits.global
 import template.AbstractLexer.LexerParams
 import template.Tokenized.{TokenizedEmpty, TokenizedValue}
 import util.Ternary.Ternary
+import util.TypeOps.ParseEither
 
 import java.text.ParseException
 import java.util.regex.Pattern
@@ -40,22 +39,23 @@ abstract class AbstractLexer[T <: Token](
     }
   }
 
-  def nextToken(): LexerParams = processCurToken(this.lexerParams, skip = true)
+  def nextToken(): ParseEither[LexerParams] = processCurToken(this.lexerParams, skip = true)
 
   @tailrec
   private def processCurToken(
     curParams: LexerParams,
     skip: Boolean,
     curTokenized: Tokenized = TokenizedEmpty
-  ): LexerParams = {
+  ): ParseEither[LexerParams] = {
     if (!skip) {
-      LexerParams(curTokenized, curParams.curPos, curParams.realPos, curParams.lastRead, curParams.buffer)
+      Right(LexerParams(curTokenized, curParams.curPos, curParams.realPos, curParams.lastRead, curParams.buffer))
     } else {
-      val candidates = lexerRules.toSet
-      val tokenized = TokenizedEmpty
-      val (newParams, nPos, newTokenized) = processCandidates(candidates, curParams, curParams.curPos, tokenized)
-      val nextParams = removeProcessedChars(nPos)(newParams)
-      processCurToken(nextParams, newTokenized.asInstanceOf[TokenizedValue[T]].skip, newTokenized)
+      processCandidates(lexerRules.toSet, curParams, curParams.curPos, TokenizedEmpty) match {
+        case Left(e) => Left(e)
+        case Right((newParams, nPos, newTokenized)) =>
+          val nextParams = removeProcessedChars(nPos)(newParams)
+          processCurToken(nextParams, newTokenized.asInstanceOf[TokenizedValue[T]].skip, newTokenized)
+      }
     }
   }
 
@@ -65,7 +65,7 @@ abstract class AbstractLexer[T <: Token](
     params: LexerParams,
     nPos: Int,
     curTokenized: Tokenized
-  ): (LexerParams, Int, Tokenized) = {
+  ): ParseEither[(LexerParams, Int, Tokenized)] = {
     if (!params.signalizeEnd && candidates.nonEmpty) {
       val nCandidates = Set.empty[LexerRule[T]]
       val res = candidates.foldLeft((nCandidates, params, nPos, curTokenized))((tuple, candidate) => {
@@ -77,9 +77,10 @@ abstract class AbstractLexer[T <: Token](
       val newTokenized =
         params.signalizeEnd ?? (TokenizedValue(getTokenWithName("EOF"), "", params.curPos, skip = false), curTokenized)
       if (newTokenized == TokenizedEmpty) {
-        throw new ParseException("Recognition error at " + getBufferedString(params.buffer), params.curPos)
+        Left(new ParseException("Recognition error at " + getBufferedString(params.buffer), params.curPos))
+      } else {
+        Right((params, nPos, newTokenized))
       }
-      (params, nPos, newTokenized)
     }
   }
 
@@ -126,14 +127,12 @@ abstract class AbstractLexer[T <: Token](
   }
 
   private def nextChar(params: LexerParams): LexerParams = {
-    IO {
-      val read = inputStream.read()
-      if (read != -1) {
-        LexerParams(params.tokenized, params.curPos, params.realPos + 1, read, params.buffer.appended(read.toChar))
-      } else {
-        LexerParams(params.tokenized, params.curPos, params.realPos, read, params.buffer)
-      }
-    }.redeem(e => throw new ParseException(e.getMessage, -1), identity).unsafeRunSync()
+    val read = inputStream.read()
+    if (read != -1) {
+      LexerParams(params.tokenized, params.curPos, params.realPos + 1, read, params.buffer.appended(read.toChar))
+    } else {
+      LexerParams(params.tokenized, params.curPos, params.realPos, read, params.buffer)
+    }
   }
 }
 

@@ -10,7 +10,7 @@ import template.Tokenized._
 
 case class CalculatorLexer(inputStream: InputStream, lexerParams: LexerParams)
   extends AbstractLexer[CalculatorToken](inputStream, lexerParams) {
-	override val lexerRules = List(
+  override val lexerRules = List(
 	LexerRule[CalculatorToken](CalculatorToken.ADD, false),
 	LexerRule[CalculatorToken](CalculatorToken.SUB, false),
 	LexerRule[CalculatorToken](CalculatorToken.MUL, false),
@@ -21,7 +21,7 @@ case class CalculatorLexer(inputStream: InputStream, lexerParams: LexerParams)
 	LexerRule[CalculatorToken](CalculatorToken.NUMBER, false),
 	LexerRule[CalculatorToken](CalculatorToken.SPACES, true)
   )
-	override def getTokenWithName(name: String): CalculatorToken = { 
-		CalculatorToken.withName(name)
-	}
+  override def getTokenWithName(name: String): CalculatorToken = { 
+    CalculatorToken.withName(name)
+  }
 }

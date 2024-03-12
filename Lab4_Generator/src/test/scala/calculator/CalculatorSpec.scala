@@ -5,6 +5,7 @@ import calculator.dsl.Algebraic.BinaryOperation
 import calculator.dsl.Expression.{generateArbitraryExpression, generateSimpleBinOp}
 import calculator.dsl.ExpressionModules._
 import calculator.dsl.{Algebraic, Calculator, Expression}
+import cats.Monad
 import common.ParserSpec
 import util.CommonUtils.treeToStringList
 import common.RandomUtil.{generateVarName, randDouble, unbiasedCoin}
@@ -14,15 +15,17 @@ import util.WriteUtil.{clearDirectoryFiles, makeGraph}
 
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
+import java.text.ParseException
 
 class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] with BeforeAndAfterAll {
   private val outputDir = "graphviz\\calculator"
   val ExprVerify: Expression[Verifiers] = Expression[Verifiers]
   val DEFAULT_TEST_SIZE = 100
-  override def callParse: ByteArrayInputStream => CalculatorContext = (bytes: ByteArrayInputStream) => {
-    val parser = CalculatorParser(bytes)
-    parser.calculator().runA(parser.lex).value
-  }
+  override def callParse[F[_]: Monad]: ByteArrayInputStream => F[Either[ParseException, CalculatorContext]] =
+    (bytes: ByteArrayInputStream) => {
+      val parser = CalculatorParser[F](bytes)
+      parser.calculator().runA(parser.lex).value
+    }
 
   override def verifyParseResult(res: CalculatorContext, sample: Calculator, id: String): Assertion = {
     val expectedRes = sample.res.toDouble
