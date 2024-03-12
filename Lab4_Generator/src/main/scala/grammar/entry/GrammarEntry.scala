@@ -1,5 +1,3 @@
 package grammar.entry
 
-trait GrammarEntry {
-
-}
+trait GrammarEntry {}

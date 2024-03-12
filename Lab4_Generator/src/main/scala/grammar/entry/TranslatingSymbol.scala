@@ -18,7 +18,7 @@ case class TranslatingSymbol(code: String) extends GrammarEntry {
       case 0 => stringBuilder.toString()
       case x =>
         if (code.charAt(code.length - x) == '$' && !in) {
-          internalNormalize(stringBuilder.append(lexerVar + "."), n - 1, in)(code, lexerVar)
+          internalNormalize(stringBuilder.append(""), n - 1, in)(code, lexerVar)
         } else {
           val curSymbol = code.charAt(code.length - x)
           internalNormalize(stringBuilder.append(curSymbol), n - 1, maybeInvert(curSymbol)(in))(code, lexerVar)
@@ -27,5 +27,4 @@ case class TranslatingSymbol(code: String) extends GrammarEntry {
 
   private def maybeInvert(curSymbol: Char): Boolean => Boolean =
     (curSymbol == '"') ?? (x => !x, identity)
-
 }

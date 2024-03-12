@@ -1,16 +1,16 @@
 
 package forc;
 
-import grammar.LexerRule;
-import template.AbstractLexer;
-import java.text.ParseException;
-import java.io.InputStream;
-import template.AbstractLexer._;
-import template.Tokenized._;
+import grammar.LexerRule
+import template.AbstractLexer
+import java.text.ParseException
+import java.io.InputStream
+import template.AbstractLexer._
+import template.Tokenized._
 
-case class ForcLexer(inputStream: InputStream)
-  extends AbstractLexer[ForcToken](inputStream) {
-	override val lexerRules = List(
+case class ForcLexer(inputStream: InputStream, lexerParams: LexerParams)
+  extends AbstractLexer[ForcToken](inputStream, lexerParams) {
+  override val lexerRules = List(
 	LexerRule[ForcToken](ForcToken.LPAREN, false),
 	LexerRule[ForcToken](ForcToken.RPAREN, false),
 	LexerRule[ForcToken](ForcToken.SEMICOLON, false),
@@ -27,7 +27,7 @@ case class ForcLexer(inputStream: InputStream)
 	LexerRule[ForcToken](ForcToken.NAME, false),
 	LexerRule[ForcToken](ForcToken.SPACES, true)
   )
-	override def getTokenWithName(name: String): ForcToken = { 
-		ForcToken.withName(name)
-	}
+  override def getTokenWithName(name: String): ForcToken = { 
+    ForcToken.withName(name)
+  }
 }

@@ -12,9 +12,7 @@ object Algebraic {
 
   abstract class InBrackets[F[_]](expression: Algebraic[F]) extends Algebraic[F] {
     override def res: F[Double] = expression.res
-
   }
-
   abstract class UnoMinus[F[_]]() extends Algebraic[F]
 
   abstract class BinaryOperation[F[_]](

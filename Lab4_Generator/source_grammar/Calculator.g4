@@ -6,12 +6,12 @@ package calculator;
 
 calculator returns[Double res]: e = expr e1 = EOF {$res = e.res;};
 
-expr returns[Double res]: h = highPrior m = muldiv[{h.res}] as = addsub[{m.res}] {$res = as.res;};
+expr returns[Double res]: h = highPrior m = muldiv[{h.res}] as = addsub[{m.res}] {$res = as.res};
 
 addsub[Double in] returns[Double res]:
-            a = ADD t = term as = addsub[{in + t.res}] {$res = as.res;}
+            a = ADD t = term as = addsub[{in + t.res}] {$res = as.res}
                 |
-            s = SUB t = term as=addsub[{in - t.res}] {$res = as.res;}
+            s = SUB t = term as=addsub[{in - t.res}] {$res = as.res}
                 |
             {$res = in;};
 
@@ -19,9 +19,9 @@ term returns[Double res]:
             h = highPrior m = muldiv[{h.res}] {$res = m.res;};
 
 muldiv[Double in] returns[Double res]:
-            m = MUL h = highPrior mm = muldiv[{in * h.res}] {$res = mm.res;}
+            m = MUL h = highPrior mm = muldiv[{in * h.res}] {$res = mm.res}
                 |
-            d = DIV h = highPrior mm = muldiv[{in / h.res}] {$res = mm.res;}
+            d = DIV h = highPrior mm = muldiv[{in / h.res}] {$res = mm.res}
                 |
             {$res = in;};
 

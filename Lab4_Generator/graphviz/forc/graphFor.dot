@@ -10,7 +10,7 @@ digraph G {
 3 -> 4
 5 [label = "[TYPE_NAME, long]"]
 4 -> 5
-6 [label = "[NAME, for1i]"]
+6 [label = "[NAME, vArfor1i]"]
 4 -> 6
 7 [label = "[EQ, =]"]
 4 -> 7
@@ -20,7 +20,7 @@ digraph G {
 3 -> 9
 10 [label = "P2"]
 3 -> 10
-11 [label = "[NAME, for1i]"]
+11 [label = "[NAME, vArfor1i]"]
 10 -> 11
 12 [label = "CMP"]
 10 -> 12
@@ -32,7 +32,7 @@ digraph G {
 3 -> 15
 16 [label = "P3"]
 3 -> 16
-17 [label = "[NAME, for1i]"]
+17 [label = "[NAME, vArfor1i]"]
 16 -> 17
 18 [label = "INC_DEC"]
 16 -> 18

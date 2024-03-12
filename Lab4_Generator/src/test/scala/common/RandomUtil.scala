@@ -9,7 +9,7 @@ object RandomUtil {
 
   def randInt(constraint: Int): Int = randPositiveInt(constraint) * randomSign
 
-  def randDouble: Double = limitedDouble * randomSign * randPositiveInt(Int.MaxValue / 100000)
+  def randDouble: Double = limitedDouble * randomSign * randPositiveInt(Int.MaxValue / 1000)
 
   def unbiasedCoin: Boolean = Random.nextBoolean()
 

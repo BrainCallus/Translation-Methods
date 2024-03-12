@@ -1,8 +1,8 @@
 import antlr.{LexerGrammar, ParserGrammar}
 import calculator.CalculatorParser
-import calculator.CalculatorParser.CalculatorContext
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import forc.ForcParser
-import forc.ForcParser.ForcContext
 import generator.{LexerGenerator, ParserGenerator, TokenGenerator}
 import grammar.entry.{GrammarEntry, NonTerminal, TranslatingSymbol}
 import grammar.{Grammar, LexerRule, ParserRule, Token}
@@ -15,44 +15,59 @@ import util.WriteUtil.makeGraph
 
 import java.io.ByteArrayInputStream
 import java.nio.file.{Files, Path}
+import java.text.ParseException
 import java.util.Optional
 import scala.util.Try
 
 object Main {
-
-  def validateArgs(args: Array[String]) = {
-    args == null || args.length != 1 && args.length != 2 || args.contains(null)
-  }
-// todo: create gen/dir if no dir
   private val calcPath = "source_grammar\\Calculator.g4"
   private val forPath = "source_grammar\\Forc.g4"
   private val genDir = Path.of("src\\gen")
 
   def main(args: Array[String]): Unit = {
-    // if(!validateArgs(args)) {
-
-    // }
     generateAndRunCalc()
-
+    generateAndRunFor()
   }
 
   private def generateAndRunFor(): Unit = {
     generateFiles(forPath)
-    val forcParser = ForcParser(new ByteArrayInputStream(("for(long for1i=1000; for1i<= -10;for1i--)").getBytes()))
-    val res: ForcContext = forcParser.forc()
-    makeGraph(res.res, "graphviz\\forc\\graphFor.dot")
+    val forcParser = ForcParser[IO](
+      new ByteArrayInputStream("for     (long vArfor1i=1000   ; vArfor1i<=    -10;vArfor1i-- )".getBytes())
+    )
+    forcParser.forc().run(forcParser.lex).value.redeem(
+        {
+          case x: ParseException => Left(x)
+          case e                 => Left(new ParseException(e.getMessage, -1))
+        },
+        identity
+      )
+      .map {
+        case Left(e)    => println(e)
+        case Right(res) => makeGraph(res._2.res, "graphviz\\forc\\graphFor.dot")
+      }
+      .unsafeRunSync()
   }
 
   private def generateAndRunCalc(): Unit = {
     generateFiles(calcPath)
-    val calculatorParser = new CalculatorParser(
+    val calculatorParser = new CalculatorParser[IO](
       new ByteArrayInputStream(
-        (" 4698.88076 ^ -6456.66656 ^ - ( -41.686080000000004 ) + - ( - ( 475.30811 ) ) + 1311.0102").getBytes()
+        "  64 ^ 4 ^ 2 + 2*2/(2/2) - 10 + 0.1".getBytes() // 0.1
       )
     )
-    val res: CalculatorContext = calculatorParser.calculator()
-    makeGraph(res, "graphviz\\calculator\\graphCalc.dot")
-    println(res.res)
+    calculatorParser.calculator().run(calculatorParser.lex).value
+      .redeem(
+        {
+          case x: ParseException => Left(x)
+          case e                 => Left(new ParseException(e.getMessage, -1))
+        },
+        identity
+      )
+      .map {
+        case Left(e)    => println(e)
+        case Right(res) => println(res._2.res)
+      }
+      .unsafeRunSync()
   }
 
   private def generateFiles(path: String): Unit = {
@@ -78,8 +93,8 @@ object Main {
   }
 
   private def getGrammar(grammarPath: Path): Grammar[InterimToken] = {
-    val lexerGrammar = new LexerGrammar(CharStreams.fromPath(grammarPath));
-    val parserGrammar = new ParserGrammar(new CommonTokenStream(lexerGrammar));
+    val lexerGrammar = new LexerGrammar(CharStreams.fromPath(grammarPath))
+    val parserGrammar = new ParserGrammar(new CommonTokenStream(lexerGrammar))
     val javaGrammar = parserGrammar.translationGrammar().gr
     val lr = javaGrammar.lexerRules
     val lexerRules: List[LexerRule[InterimToken]] = tokenizeJavaLexerRules(convertList(lr))
@@ -89,7 +104,6 @@ object Main {
   }
 
   private def toParserRules(parserRules: List[JavaParserRule]): List[ParserRule] = {
-
     parserRules.map(pr =>
       ParserRule(
         pr.name,
@@ -119,7 +133,7 @@ object Main {
     }
   }
 
-  def generateParser(outDir: Path, grammar: Grammar[? <: Token]): Unit = {
+  private def generateParser(outDir: Path, grammar: Grammar[? <: Token]): Unit = {
     val tokenGenerator = TokenGenerator(grammar)
     val lexerGenerator = LexerGenerator(grammar)
     val parserGenerator = ParserGenerator(grammar)

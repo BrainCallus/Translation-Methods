@@ -1,16 +1,16 @@
 
 package calculator;
 
-import grammar.LexerRule;
-import template.AbstractLexer;
-import java.text.ParseException;
-import java.io.InputStream;
-import template.AbstractLexer._;
-import template.Tokenized._;
+import grammar.LexerRule
+import template.AbstractLexer
+import java.text.ParseException
+import java.io.InputStream
+import template.AbstractLexer._
+import template.Tokenized._
 
-case class CalculatorLexer(inputStream: InputStream)
-  extends AbstractLexer[CalculatorToken](inputStream) {
-	override val lexerRules = List(
+case class CalculatorLexer(inputStream: InputStream, lexerParams: LexerParams)
+  extends AbstractLexer[CalculatorToken](inputStream, lexerParams) {
+  override val lexerRules = List(
 	LexerRule[CalculatorToken](CalculatorToken.ADD, false),
 	LexerRule[CalculatorToken](CalculatorToken.SUB, false),
 	LexerRule[CalculatorToken](CalculatorToken.MUL, false),
@@ -21,7 +21,7 @@ case class CalculatorLexer(inputStream: InputStream)
 	LexerRule[CalculatorToken](CalculatorToken.NUMBER, false),
 	LexerRule[CalculatorToken](CalculatorToken.SPACES, true)
   )
-	override def getTokenWithName(name: String): CalculatorToken = { 
-		CalculatorToken.withName(name)
-	}
+  override def getTokenWithName(name: String): CalculatorToken = { 
+    CalculatorToken.withName(name)
+  }
 }

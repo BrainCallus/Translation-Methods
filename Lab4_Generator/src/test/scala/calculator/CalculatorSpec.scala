@@ -5,22 +5,27 @@ import calculator.dsl.Algebraic.BinaryOperation
 import calculator.dsl.Expression.{generateArbitraryExpression, generateSimpleBinOp}
 import calculator.dsl.ExpressionModules._
 import calculator.dsl.{Algebraic, Calculator, Expression}
+import cats.Monad
 import common.ParserSpec
 import util.CommonUtils.treeToStringList
 import common.RandomUtil.{generateVarName, randDouble, unbiasedCoin}
-import org.scalatest.Assertion
+import org.scalatest.{Assertion, BeforeAndAfterAll}
 import util.Ternary.Ternary
 import util.WriteUtil.{clearDirectoryFiles, makeGraph}
 
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
+import java.text.ParseException
 
-class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
+class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] with BeforeAndAfterAll {
   private val outputDir = "graphviz\\calculator"
   val ExprVerify: Expression[Verifiers] = Expression[Verifiers]
   val DEFAULT_TEST_SIZE = 100
-  override def callParse: ByteArrayInputStream => CalculatorContext = (bytes: ByteArrayInputStream) =>
-    CalculatorParser(bytes).calculator()
+  override def callParse[F[_]: Monad]: ByteArrayInputStream => F[Either[ParseException, CalculatorContext]] =
+    (bytes: ByteArrayInputStream) => {
+      val parser = CalculatorParser[F](bytes)
+      parser.calculator().runA(parser.lex).value
+    }
 
   override def verifyParseResult(res: CalculatorContext, sample: Calculator, id: String): Assertion = {
     val expectedRes = sample.res.toDouble
@@ -39,15 +44,23 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
         }
         assert(diff / math.abs(expectedRes + 1e-9) <= 1e-5)
     }
+  }
 
+  override def beforeAll(): Unit = {
+    clearOutput(Path.of(outputDir))
   }
 
   "calculator" should "parse and calculate numbers correct" in {
     validSeries(buildCalc(ExprVerify.number(randDouble)), "Number")
+
   }
 
   it should "parse and calculate numbers surrounded brackets" in {
     validSeries(buildCalc(ExprVerify.inBrackets(ExprVerify.number(randDouble))), "NumberBrackets")
+  }
+
+  it should "parse and calculate unary minus operation" in {
+    validSeries(buildCalc(ExprVerify.unoMinus(generateArbitraryExpression[Verifiers]())), "UnaryMinus")
   }
 
   it should "parse and calculate simple binary operations" in {
@@ -56,14 +69,10 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
 
   it should "parse and calculate simple binary operations surrounded brackets" in {
     validSeries(buildCalc(ExprVerify.inBrackets(generateSimpleBinOp[Verifiers]())), "OpBrackets")
-  }
 
-  it should "parse and calculate unary minus operation" in {
-    validSeries(buildCalc(ExprVerify.unoMinus(generateArbitraryExpression[Verifiers]())), "UnaryMinus")
   }
 
   it should "parse and calculate random correct expression" in {
-    clearOutput(Path.of(outputDir))
     validSeries(buildCalc(generateArbitraryExpression[Verifiers]()), "RandExpression")
   }
 
@@ -120,6 +129,7 @@ class CalculatorSpec extends ParserSpec[Calculator, CalculatorContext] {
     invalidSeries(buildCalc(generateArbitraryExpression[Verifiers]()), c => "(" + c.generateStringSample)
     invalidSeries(buildCalc(generateArbitraryExpression[Verifiers]()), c => ")" + c.generateStringSample)
   }
+
   private def buildCalc(alg: Algebraic[Verifiers]): Calculator = Calculator(alg)
 
   private def clearOutput(path: Path): Unit = {

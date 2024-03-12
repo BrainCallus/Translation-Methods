@@ -1,5 +1,6 @@
 package forc
 
+import cats.Monad
 import common.ParserSpec
 import forc.dsl.{Forc, VarType}
 import forc.dsl.Forc.generateFor
@@ -10,13 +11,15 @@ import org.scalatest.Assertion
 import util.Ternary.Ternary
 
 import java.io.ByteArrayInputStream
+import java.text.ParseException
 
 class ForcSpec extends ParserSpec[Forc, ForcContext] {
   override val DEFAULT_TEST_SIZE = 100
-  override def callParse: ByteArrayInputStream => ForcContext = (bytes: ByteArrayInputStream) => {
-    ForcParser(bytes).forc()
-  }
-
+  override def callParse[F[_]: Monad]: ByteArrayInputStream => F[Either[ParseException, ForcContext]] =
+    (bytes: ByteArrayInputStream) => {
+      val parser = ForcParser[F](bytes)
+      parser.forc().runA(parser.lex).value
+    }
   override def verifyParseResult(res: ForcContext, sample: Forc, id: String): Assertion = {
     assertResult(treeToStringList(res).mkString(" "))(treeToStringList(res.res).mkString(" "))
   }

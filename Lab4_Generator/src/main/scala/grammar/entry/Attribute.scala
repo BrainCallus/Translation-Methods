@@ -1,3 +1,3 @@
 package grammar.entry
 
-case class Attribute (attrType: String, attrValue: String) extends GrammarEntry
+case class Attribute(attrType: String, attrValue: String) extends GrammarEntry
