@@ -40,7 +40,7 @@ declareValue : value (value (Comma value)*)?;
 value : oper* unoValue (oper+ unoValue)* oper*;
 unoValue : unoOper* unoValueKeyWord unoOper*;
 unoValueKeyWord : keyWord* unoValueGet;
-unoValueGet : justValue('['value']')* ('.' unoValue)*;
+unoValueGet : justValue (('.' unoValue) | ('['value']'))* ;
 justValue : '(' value ')'
                | NUMBER
                | STRING

@@ -23,49 +23,47 @@ public class JavaCodeFormatListener extends JavaCodeBaseListener {
 
     @Override
     public void exitCode(JavaCodeParser.CodeContext ctx) {
-        join("\n\n");
+        mkString("\n\n");
     }
 
     @Override
-    public void exitPackage(JavaCodeParser.PackageContext ctx){
-        addToResult(tree.getChildren().get(0).getResult() + SPACE);
-        join(tree.getChildren().stream().skip(1));
+    public void exitPackage(JavaCodeParser.PackageContext ctx) {
+        addSpaceAfterFirstChild();
     }
 
     @Override
     public void exitImports(JavaCodeParser.ImportsContext ctx) {
-        join("\n");
+        mkString("\n");
     }
 
     @Override
     public void exitImprt(JavaCodeParser.ImprtContext ctx) {
-        addToResult(tree.getChildren().get(0).getResult() + SPACE);
-        join(tree.getChildren().stream().skip(1));
+        addSpaceAfterFirstChild();
     }
 
     @Override
-    public  void exitProgrammEntities(JavaCodeParser.ProgrammEntitiesContext ctx) {
-        join("\n\n" + mkOffset());
+    public void exitProgrammEntities(JavaCodeParser.ProgrammEntitiesContext ctx) {
+        mkString("\n\n" + mkOffset());
     }
 
     @Override
     public void exitCodeEntry(JavaCodeParser.CodeEntryContext ctx) {
-        join(SPACE);
+        mkString(SPACE);
     }
 
     @Override
     public void exitDeclaration(JavaCodeParser.DeclarationContext ctx) {
-        join(SPACE);
+        mkString(SPACE);
     }
 
     @Override
     public void exitDeclarationPrefix(JavaCodeParser.DeclarationPrefixContext ctx) {
-        join(SPACE);
+        mkString(SPACE);
     }
 
     @Override
     public void exitFuncDeclarationArg(JavaCodeParser.FuncDeclarationArgContext ctx) {
-        join(SPACE);
+        mkString(SPACE);
     }
 
     @Override
@@ -76,38 +74,38 @@ public class JavaCodeFormatListener extends JavaCodeBaseListener {
     @Override
     public void exitInnerCode(JavaCodeParser.InnerCodeContext ctx) {
         String offset = "\n" + mkOffset();
-        join(offset,offset);
-        level --;
+        mkString(offset, offset);
+        level--;
     }
 
     @Override
     public void exitExecutableStatement(JavaCodeParser.ExecutableStatementContext ctx) {
-        join(SPACE);
+        mkString(SPACE);
     }
 
     @Override
     public void exitStatementDeclaration(JavaCodeParser.StatementDeclarationContext ctx) {
-        join(SPACE);
+        mkString(SPACE);
     }
 
     @Override
     public void exitStatementDeclaraitonRest(JavaCodeParser.StatementDeclaraitonRestContext ctx) {
-        join(SPACE);
+        mkString(SPACE);
     }
 
     @Override
     public void exitStatementDeclarationInScope(JavaCodeParser.StatementDeclarationInScopeContext ctx) {
-        for(Tree child: tree.getChildren()) {
-            addToResult(child.getResult());
-            if(";".equals(child.getResult())) {
-                addToResult(SPACE);
+        for (Tree child : tree.getChildren()) {
+            tree.addToResult(child.getResult());
+            if (";".equals(child.getResult())) {
+                tree.addToResult(SPACE);
             }
         }
     }
 
     @Override
     public void exitSwitchStatement(JavaCodeParser.SwitchStatementContext ctx) {
-        join(SPACE);
+        mkString(SPACE);
     }
 
     @Override
@@ -116,39 +114,37 @@ public class JavaCodeFormatListener extends JavaCodeBaseListener {
     }
 
     @Override
-    public void exitSwitchCode(JavaCodeParser.SwitchCodeContext ctx){
+    public void exitSwitchCode(JavaCodeParser.SwitchCodeContext ctx) {
         String offset = "\n" + mkOffset();
-        join(offset,offset);
+        mkString(offset, offset);
         level--;
     }
 
     @Override
     public void exitCase(JavaCodeParser.CaseContext ctx) {
-        addToResult(tree.getChildren().get(0).getResult() + SPACE);
-        join(tree.getChildren().stream().skip(1));
+        addSpaceAfterFirstChild();
     }
 
     @Override
     public void exitValue(JavaCodeParser.ValueContext ctx) {
-        join(" ");
+        mkString(SPACE);
     }
 
     @Override
     public void exitDeclareValue(JavaCodeParser.DeclareValueContext ctx) {
-        if(ctx.children.size() > 1) {
-            addToResult(tree.getChildren().get(0).getResult() + SPACE);
-            join(tree.getChildren().stream().skip(1));
+        if (ctx.children.size() > 1) {
+            addSpaceAfterFirstChild();
         }
     }
 
     @Override
     public void exitUnoValueKeyWord(JavaCodeParser.UnoValueKeyWordContext ctx) {
-        join(" ");
+        mkString(" ");
     }
 
     @Override
     public void exitKeyWordAndTokens(JavaCodeParser.KeyWordAndTokensContext ctx) {
-        join(" ");
+        mkString(" ");
     }
 
     @Override
@@ -158,8 +154,8 @@ public class JavaCodeFormatListener extends JavaCodeBaseListener {
 
     @Override
     public void exitEveryRule(ParserRuleContext ctx) {
-        if(tree.getResult()==null) {
-            join();
+        if (tree.getResult() == null) {
+            mkString();
         }
         tree = tree.getAncestor();
     }
@@ -169,48 +165,39 @@ public class JavaCodeFormatListener extends JavaCodeBaseListener {
         switch (node.toString()) {
             case "<EOF>" -> {
             }
-            case "," -> addTerminal(","+SPACE);
-            case "}" -> addTerminal("\n"+mkOffset() + "}");
+            case "," -> addTerminal("," + SPACE);
+            case "}" -> addTerminal("\n" + mkOffset() + "}");
             default -> addTerminal(node.toString());
         }
     }
 
 
-
-
-
-
-
-    private void join() {
-        join("");
+    private void mkString() {
+        mkString("");
     }
 
-    private void join(String delimiter) {
-        join(delimiter, "");
+    private void mkString(String delimiter) {
+        mkString(delimiter, "");
     }
 
-    private void join(String delimiter, String prefix) {
-        join(tree.getChildren().stream(), delimiter, prefix);
+    private void mkString(String delimiter, String prefix) {
+        mkString(tree.getChildren().stream(), delimiter, prefix);
     }
 
-    private void join(Stream<Tree> treeStream) {
-        join(treeStream, "", "");
-    }
-    private void join(Stream<Tree> treeStream, String delimiter, String prefix) {
-        String res = prefix + treeStream.map(Tree::getResult).collect(Collectors.joining(delimiter));
-        if(tree.getResult()==null) {
-            tree.setResult(res);
-        } else {
-            addToResult(res);
-        }
+    private void mkString(Stream<Tree> treeStream) {
+        mkString(treeStream, "", "");
     }
 
+    private void mkString(Stream<Tree> treeStream, String delimiter, String prefix) {
+        tree.addToResult(prefix + treeStream.map(Tree::getResult).collect(Collectors.joining(delimiter)));
+    }
+
+    private void addSpaceAfterFirstChild() {
+        tree.addToResult(tree.getChildren().get(0).getResult() + SPACE);
+        mkString(tree.getChildren().stream().skip(1));
+    }
     private void addTerminal(String s) {
         new Tree(s).buildFromAncestor(tree);
-    }
-
-    private void addToResult(String s) {
-        tree.setResult((tree.getResult()==null?"": tree.getResult()) + s);
     }
 
     private String mkOffset() {
@@ -219,12 +206,8 @@ public class JavaCodeFormatListener extends JavaCodeBaseListener {
 
 
     public static class Tree {
-
-
         private String result;
         private final List<Tree> children;
-
-
         private Tree ancestor;
 
         public Tree() {
@@ -252,8 +235,8 @@ public class JavaCodeFormatListener extends JavaCodeBaseListener {
             return result;
         }
 
-        public void setResult(String result) {
-            this.result = result;
+        public void addToResult(String s) {
+            result = (result == null ? "" : result) + s;
         }
 
         public List<Tree> getChildren() {
@@ -263,7 +246,6 @@ public class JavaCodeFormatListener extends JavaCodeBaseListener {
         public Tree getAncestor() {
             return ancestor;
         }
-
     }
 }
 
