@@ -70,6 +70,7 @@ object WriteUtil {
   }
 
   private def writeOffset(writer: BufferedWriter, level: Int): Unit =
-    writer.write("\t".repeat(level))
+    writer.write(SCALA_TAB.repeat(level))
 
+  private val SCALA_TAB = "  "
 }

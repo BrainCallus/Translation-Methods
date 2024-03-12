@@ -18,15 +18,19 @@ p1 returns[String name, ContextTree res]:
 $res = P1Context("P1", List(TerminalTree(t), TerminalTree(n),  TerminalTree(e), TerminalTree(num)))};
 
 p2[String name] returns[ContextTree res]:
-                            n = NAME {c2 = if(n.text != name) {
-    throw new ParseException(s"Invalid variable name. Variable name was declared as \"" + name+ s"\", but got ${n.text}", lex.curPos())
+                            n = NAME {_ <- if (n.text != name) {
+  throwPEStateT[F, ForcLexer, List[GrammarTree[_]]](s"Invalid variable name. Variable name was declared as \"" + name+ s"\", but got ${n.text}")
+} else {
+  StateT.pure[ForcMET, ForcLexer, List[GrammarTree[_]]](List.empty)
 }}
                             c = cmp
                             num = NUMBER {$res = P2Context("P2", List(TerminalTree(n), c.res, TerminalTree(num)))};
 
 p3[String name] returns[ContextTree res]:
-                            n=NAME {c3 = if(n.text != name) {
-    throw new ParseException(s"Invalid variable name. Variable name was declared as \"" + name+ s"\", but got ${n.text}", lex.curPos())
+                            n=NAME {_ <- if (n.text != name) {
+  throwPEStateT[F, ForcLexer, List[GrammarTree[_]]](s"Invalid variable name. Variable name was declared as \"" + name+ s"\", but got ${n.text}")
+} else {
+  StateT.pure[ForcMET, ForcLexer, List[GrammarTree[_]]](List.empty)
 }}
                             i=incdec {$res = P3Context("P3", List(TerminalTree(n), i.res))};
 

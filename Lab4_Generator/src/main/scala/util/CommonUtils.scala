@@ -1,6 +1,4 @@
 package util
-import cats.data.State
-import template.AbstractLexer
 import util.GrammarTree._
 
 import scala.annotation.tailrec

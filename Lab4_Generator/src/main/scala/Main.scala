@@ -1,9 +1,8 @@
 import antlr.{LexerGrammar, ParserGrammar}
 import calculator.CalculatorParser
-import cats.data.State
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import forc.ForcParser
-import forc.ForcParser.ForcContext
-
 import generator.{LexerGenerator, ParserGenerator, TokenGenerator}
 import grammar.entry.{GrammarEntry, NonTerminal, TranslatingSymbol}
 import grammar.{Grammar, LexerRule, ParserRule, Token}
@@ -16,6 +15,7 @@ import util.WriteUtil.makeGraph
 
 import java.io.ByteArrayInputStream
 import java.nio.file.{Files, Path}
+import java.text.ParseException
 import java.util.Optional
 import scala.util.Try
 
@@ -29,27 +29,45 @@ object Main {
     generateAndRunFor()
   }
 
-  def getState(arg: Int, f: String => String): State[String, Int] =
-    State(str => (f(str), arg))
-
   private def generateAndRunFor(): Unit = {
     generateFiles(forPath)
-    val forcParser = ForcParser(
+    val forcParser = ForcParser[IO](
       new ByteArrayInputStream("for     (long vArfor1i=1000   ; vArfor1i<=    -10;vArfor1i-- )".getBytes())
     )
-    val res: ForcContext = forcParser.forc().run(forcParser.lex).value._2
-    makeGraph(res.res, "graphviz\\forc\\graphFor.dot")
+    forcParser.forc().run(forcParser.lex).value.redeem(
+        {
+          case x: ParseException => Left(x)
+          case e                 => Left(new ParseException(e.getMessage, -1))
+        },
+        identity
+      )
+      .map {
+        case Left(e)    => println(e)
+        case Right(res) => makeGraph(res._2.res, "graphviz\\forc\\graphFor.dot")
+      }
+      .unsafeRunSync()
   }
 
   private def generateAndRunCalc(): Unit = {
     generateFiles(calcPath)
-    val calculatorParser = new CalculatorParser(
+    val calculatorParser = new CalculatorParser[IO](
       new ByteArrayInputStream(
-        "  64 // 4 // 2 + 2*2/(2/2) - 10".getBytes() // 0
+        "  64 // 4 // 2 + 2*2/(2/2) - 10 + 0.1".getBytes() // 0.1
       )
     )
-    val res = calculatorParser.calculator()
-    println(res.run(calculatorParser.lex).value._2.res)
+    calculatorParser.calculator().run(calculatorParser.lex).value
+      .redeem(
+        {
+          case x: ParseException => Left(x)
+          case e                 => Left(new ParseException(e.getMessage, -1))
+        },
+        identity
+      )
+      .map {
+        case Left(e)    => println(e)
+        case Right(res) => println(res._2.res)
+      }
+      .unsafeRunSync()
   }
 
   private def generateFiles(path: String): Unit = {

@@ -24,7 +24,7 @@ final case class Grammar[T <: Token](
           val cur = getNextRule(rules(i), ruleName)
           val temp = getNextRule(rules(j), ruleName)
           if (cur.intersect(temp).nonEmpty) {
-            throw new Exception("Not LL1")
+            throw new IllegalArgumentException("Not LL1")
           }
         }
       }
@@ -34,14 +34,13 @@ final case class Grammar[T <: Token](
   def checkLexerRules(): Unit = {
     val duplicates = lexerRules.groupBy(r => r.token.getName).filter(entry => entry._2.length > 1).keys
     if (duplicates.nonEmpty) {
-      throw new Exception(s"Duplicated lexer rule ${duplicates.head}")
+      throw new IllegalArgumentException(s"Duplicated lexer rule ${duplicates.head}")
     }
 
     val illegal = lexerRules.map(_.token.getName).filter(illegalTokens.contains)
     if (illegal.nonEmpty) {
-      throw new Exception(s"Illegal token \"${illegal.head}\" found")
+      throw new IllegalArgumentException(s"Illegal token \"${illegal.head}\" found")
     }
-
   }
 
   def getNextRule(rule: List[GrammarEntry], ruleName: String): Set[String] = {
@@ -81,10 +80,9 @@ object Grammar {
       case Nil => Set(EPS)
       case x :: xs =>
         x match {
-          case term: Terminal       => Set(term.value) // tod: term.name
+          case term: Terminal       => Set(term.value)
           case _: TranslatingSymbol => getFirst(xs, first)
-          case nt: NonTerminal      => first.getOrElse(nt.name, first.getOrElse(nt.value, Set.empty)) // tod: nt.name
-
+          case nt: NonTerminal      => first.getOrElse(nt.name, first.getOrElse(nt.value, Set.empty))
         }
     }
 
@@ -166,11 +164,10 @@ object Grammar {
                 first.get(nt.name) match {
                   case Some(value) => value ++ (value.contains(EPS) ?? (extractFirstByRule(xs, first), Set.empty))
                   case None        => Set.empty
-                } // Set.empty[String]
+                }
             }
           case _: TranslatingSymbol => extractFirstByRule(xs, first)
-          case term: Terminal       => Set(term.value) // tod o term.value
+          case term: Terminal       => Set(term.value)
         }
     }
-
 }

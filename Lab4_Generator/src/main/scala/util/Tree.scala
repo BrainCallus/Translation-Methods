@@ -11,5 +11,3 @@ trait Tree[T] {
   def showRoot: String = showEv.show(root)
 
 }
-
-object Tree {}
