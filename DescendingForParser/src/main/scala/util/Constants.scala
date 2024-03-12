@@ -60,5 +60,4 @@ object Constants {
     "INC_DEC" -> NonTerminal("INC_DEC", Seq(List("INC"), List("DEC"), List("INC_DEC_N", "NUMBER"))),
     "INC_DEC_N" -> NonTerminal("INC_DEC_N", Seq(List("INC_N"), List("DEC_N")))
   )
-
 }

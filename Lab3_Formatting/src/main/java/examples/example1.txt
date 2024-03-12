@@ -1,0 +1,81 @@
+package not_package;
+
+import org.antlr.v4.runtime.CharStream      ;
+import org.antlr.v4.runtime.CharStreams;
+
+
+
+
+
+
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
+import java.nio.file.*;
+
+public class Main {public static void main( String[   ]args) {
+CharStream text =              CharStreams.fromPath(Path.of( "src\\main\\java\\examples\\example1.txt"   ));
+
+        JavaCodeFormatListener formatListener = new    JavaCodeFormatListener(    );
+        (new ParseTreeWalker()).walk(formatListener,
+ (new JavaCodeParser(new CommonTokenStream(new     JavaCodeLexer(text)))            ).code()) ;
+
+
+
+
+
+
+        System.out.println(formatListener.getTree(
+        ).getResult());
+        switch
+ (node.toString()) {
+            case "<EOF>"
+
+
+
+
+            :return;
+    case ",":
+           addTerminal(node.toString() + " ");
+                break;
+            case "}":
+                addTerminal   ("\n" + tabOffset() + node.toString());
+                break;
+            default:
+                              addTerminal(node.toString());
+        }
+        String s="a or b xor c or     d";
+        try {
+            Tree result = new
+            Parser().parse(s);
+            result.write("/src/main/java/examples/example2.txt");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } finally {
+
+        writer.close();}
+        for (int i   = 0; i < 4   ;   i   ++) {if(i>100){
+--i;} else {i--;}
+        }
+    }
+
+
+protected synchronized NewType variable(){
+ var k = "str";
+ NOTHING = new None(a);
+ return NOTHING;}
+
+
+
+    void tFunc()
+    {
+
+
+        }
+
+}
+
+            class T {
+
+}
+
